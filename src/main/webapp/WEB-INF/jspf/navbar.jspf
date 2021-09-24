@@ -1,0 +1,113 @@
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ page import="com.danylevych.hotel.util.Page"%>
+
+<c:set var="uri" value="${pageContext.request.requestURI}" />
+<c:set var="currentPage" value="${uri.substring(uri.lastIndexOf('/') + 1)}" />
+
+<c:set var="profile"
+  value="${homepage}/user/${sessionScope.user.role.toString()}.jsp" />
+
+<nav class="navbar navbar-expand navbar-dark bg-dark border-bottom">
+  <div class="container-fluid">
+
+    <a class="navbar-brand" href="${homepage}">
+      <fmt:message key="app.name" />
+    </a>
+
+    <ul class="navbar-nav me-auto">
+      <c:choose>
+        <c:when test="${Page.isActive(currentPage, Page.HOME, Page.ROOM_LIST)}">
+          <li class="nav-item">
+            <a href="${homepage}"
+              class="nav-link ${Page.highlightIfActive(currentPage, Page.HOME)}">
+              <fmt:message key="navbar.homepage" />
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="${homepage}/do?action=list&entity=room&orderBy=number"
+              class="nav-link ${Page.highlightIfActive(currentPage, Page.ROOM_LIST)}">
+              <fmt:message key="room.list" />
+            </a>
+          </li>
+        </c:when>
+        <c:otherwise>
+          <li class="nav-item">
+            <a href="${profile}"
+              class="nav-link ${Page.highlightIfActive(currentPage, Page.PROFILE)}">
+              <fmt:message key="navbar.profile" />
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="${homepage}/do?action=list&entity=booking&orderBy=create_time"
+              class="nav-link ${Page.highlightIfActive(currentPage, Page.BOOKING_LIST)}">
+              <fmt:message key="booking.list" />
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="${homepage}/do?action=list&entity=order&orderBy=create_time"
+              class="nav-link ${Page.highlightIfActive(currentPage, Page.ORDER_LIST)}">
+              <fmt:message key="order.list" />
+            </a>
+          </li>
+        </c:otherwise>
+      </c:choose>
+    </ul>
+
+    <ul class="navbar-nav ms-auto">
+      <c:choose>
+        <c:when test="${sessionScope.user != null}">
+          <li class="nav-item dropdown">
+            <a data-bs-toggle="dropdown" href="#"
+              class="nav-link dropdown-toggle">
+              <em class="bi bi-person-fill"></em>
+            </a>
+            <ul
+              class="dropdown-menu dropdown-menu-end dropdown-menu-dark no-min-width">
+              <li>
+                <a href="${profile}" class="dropdown-item">${user.fullName}</a>
+              </li>
+              <li>
+                <form action="${homepage}/do" method="post">
+                  <input name="action" value="signOut" type="hidden">
+                  <button class="dropdown-item" type="submit">
+                    <fmt:message key="navbar.sign_out" />
+                  </button>
+                </form>
+              </li>
+            </ul>
+          </li>
+        </c:when>
+        <c:otherwise>
+          <li class="nav-item">
+            <a class="nav-link" href="${homepage}/auth/login.jsp">
+              <fmt:message key="navbar.login" />
+            </a>
+          </li>
+        </c:otherwise>
+      </c:choose>
+
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#">
+          ${applicationScope.locales[locale]}</a>
+        <ul
+          class="dropdown-menu dropdown-menu-end dropdown-menu-dark no-min-width">
+          <c:forEach var="entry" items="${applicationScope.locales}">
+            <li>
+              <form action="${homepage}/do" method="post">
+                <input name="action" value="setLocale" type="hidden">
+                <button class="dropdown-item" name="locale" value="${entry.key}"
+                  type="submit">${entry.value}</button>
+              </form>
+            </li>
+          </c:forEach>
+        </ul>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<script
+  src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js">
+	
+</script>

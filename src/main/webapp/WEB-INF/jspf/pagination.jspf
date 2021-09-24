@@ -1,0 +1,24 @@
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+
+<nav>
+  <ul class="pagination justify-content-center">
+    <li class="page-item ${isFirstPage ? 'disabled' : ''}">
+      <a class="page-link" tabindex="${isFirstPage ? -1 : 0}"
+        href="do?action=list&entity=${entity}&page=${page - 1}">
+        <span>&laquo;</span>
+      </a>
+    </li>
+    <c:forEach var="page" items="${pages}">
+      <li class="page-item ${page == requestScope.page ? 'active' : ''}">
+        <a class="page-link"
+          href="do?action=list&entity=${entity}&page=${page}">${page}</a>
+      </li>
+    </c:forEach>
+    <li class="page-item ${isLastPage ? 'disabled' : ''}">
+      <a class="page-link" tabindex="${isLastPage ? -1 : 0}"
+        href="do?action=list&entity=${entity}&page=${page + 1}">
+        <span>&raquo;</span>
+      </a>
+    </li>
+  </ul>
+</nav>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+	<Appenders>
+		<Console
+			name="Console-Appender"
+			target="SYSTEM_OUT">
+			<PatternLayout>
+				<pattern>
+					[%level] %d{dd-MM-yyyy HH:mm:ss.SSS} [%t] %msg%n
+				</pattern>
+			</PatternLayout>
+		</Console>
+		<File
+			name="File-Appender"
+			fileName="${sys:logPath}"
+			append="true">
+			<PatternLayout>
+				<pattern>
+					[%level] %d{dd-MM-yyyy HH:mm:ss.SSS} [%t] %msg%n
+				</pattern>
+			</PatternLayout>
+		</File>
+	</Appenders>
+	<Loggers>
+
+		<Logger
+			name="com.danylevych.hotel">
+			<AppenderRef
+				ref="File-Appender"
+				level="trace" />
+		</Logger>
+		<Root level="trace">
+			<AppenderRef ref="Console-Appender" />
+		</Root>
+	</Loggers>
+</Configuration>

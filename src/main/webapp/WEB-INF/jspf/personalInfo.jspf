@@ -1,0 +1,39 @@
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+
+<main class="p-3">
+  <h1 class="text-center">
+    <fmt:message key="user.info" />
+  </h1>
+
+  <div class="container p-3 text-secondary">
+  
+    <div class="row">
+      <div class="col">
+        <fmt:message key="user.first_name" />
+      </div>
+      <div class="col">${user.firstName}</div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <fmt:message key="user.last_name" />
+      </div>
+      <div class="col">${user.lastName}</div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <fmt:message key="user.email" />
+      </div>
+      <div class="col">${user.email}</div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <fmt:message key="user.create_time" />
+      </div>
+      <div class="col">${user.createTime}</div>
+    </div>
+  </div>
+
+</main>
