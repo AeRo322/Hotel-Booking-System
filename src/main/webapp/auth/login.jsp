@@ -12,7 +12,7 @@
 </head>
 <body class="d-flex text-center h-100">
   <main class="form-signin w-100 m-auto">
-    <form action="../do" method="post">
+    <form action="${homepage}/do" method="post">
     
       <h1 class="h3 mb-3 fw-normal text-light">
         <fmt:message key="login.sign_in" />

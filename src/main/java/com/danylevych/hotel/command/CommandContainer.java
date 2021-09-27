@@ -17,6 +17,8 @@ public final class CommandContainer {
 	COMMANDS.put("order", new OrderCommand());
 	COMMANDS.put("login", new LoginCommand());
 	COMMANDS.put("list", new ListCommand());
+	COMMANDS.put("book", new BookCommand());
+	COMMANDS.put("cart", new CartCommand());
     }
 
     private CommandContainer() {

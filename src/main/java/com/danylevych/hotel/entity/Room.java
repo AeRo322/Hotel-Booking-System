@@ -1,10 +1,17 @@
 package com.danylevych.hotel.entity;
 
-import java.io.Serializable;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import static com.danylevych.hotel.entity.Room.Column.CAPACITY;
+import static com.danylevych.hotel.entity.Room.Column.CLASS_ID;
+import static com.danylevych.hotel.entity.Room.Column.NUMBER;
+import static com.danylevych.hotel.entity.Room.Column.PRICE;
+import static com.danylevych.hotel.entity.Room.Column.STATUS_ID;
 
-public class Room implements Entity {
+import java.io.Serializable;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Objects;
+
+public class Room implements Serializable {
 
     private static final long serialVersionUID = -7865967147829710619L;
 
@@ -16,24 +23,41 @@ public class Room implements Entity {
     private int price;
 
     public enum Column {
-	
-	PRICE,
+
 	NUMBER,
-	CAPACITY,
+	STATUS_ID,
 	CLASS_ID,
-	STATUS_ID;
+	CAPACITY,
+	PRICE;
 
 	public final String v = name().toLowerCase();
 
-	private static final String SEQUENCE =
-	        Stream.of(values())
-	              .map(Column::toString)
-	              .collect(Collectors.joining(","));
+    }
 
-	public static String toSequence() {
-	    return SEQUENCE;
+    public Room() {
+
+    }
+
+    public Room(ResultSet resultSet) throws SQLException {
+	roomStatus = RoomStatus.fromInt(resultSet.getInt(STATUS_ID.v));
+	roomClass = RoomClass.fromInt(resultSet.getInt(CLASS_ID.v));
+	capacity = resultSet.getInt(CAPACITY.v);
+	number = resultSet.getInt(NUMBER.v);
+	price = resultSet.getInt(PRICE.v);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+	if (obj instanceof Room) {
+	    Room room = (Room) obj;
+	    return number == room.number;
 	}
+	return false;
+    }
 
+    @Override
+    public int hashCode() {
+	return Objects.hashCode(number);
     }
 
     public RoomClass getRoomClass() {
@@ -74,12 +98,6 @@ public class Room implements Entity {
 
     public void setPrice(int price) {
 	this.price = price;
-    }
-
-    @Override
-    public Object[] extract() {
-	// TODO Auto-generated method stub
-	return null;
     }
 
 }

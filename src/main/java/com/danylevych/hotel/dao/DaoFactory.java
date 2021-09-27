@@ -28,8 +28,6 @@ public abstract class DaoFactory {
 	return null;
     }
 
-    public abstract Connection getTransactionConnection() throws SQLException;
-
     public abstract Connection getConnection() throws SQLException;
 
     public abstract OrderDetailsDao getOrderDetailsDao();
@@ -41,5 +39,7 @@ public abstract class DaoFactory {
     public abstract UserDao getUserDao();
 
     public abstract RoomDao getRoomDao();
+    
+    public abstract CartDao getCartDao();
 
 }

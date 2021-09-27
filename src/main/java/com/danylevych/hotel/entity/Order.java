@@ -5,14 +5,14 @@ import static com.danylevych.hotel.entity.Order.Column.ID;
 import static com.danylevych.hotel.entity.Order.Column.ROOM_CLASS_ID;
 import static com.danylevych.hotel.entity.Order.Column.STATUS_ID;
 
+import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.ParseException;
 import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 
-public class Order implements Entity {
+public class Order implements Serializable {
 
     private static final long serialVersionUID = 6192785431279133934L;
 
@@ -39,29 +39,24 @@ public class Order implements Entity {
 
     }
 
-    public Order(HttpServletRequest request) throws ParseException {
+    public Order(HttpServletRequest request) {
 	int classId = Integer.parseInt(request.getParameter("room_class_id"));
 	roomClass = RoomClass.fromInt(classId);
 	details = new OrderDetails(request);
 	status = OrderStatus.NEW;
     }
 
-    public Order(ResultSet resultSet) throws SQLException {
-	roomClass = RoomClass.fromInt(resultSet.getInt(ROOM_CLASS_ID.v));
-	status = OrderStatus.fromInt(resultSet.getInt(STATUS_ID.v));
-	createTime = resultSet.getTimestamp(CREATE_TIME.v);
-	id = resultSet.getLong(ID.v);
-	
-	details = new OrderDetails(resultSet);
-    }
+    public Order(ResultSet resultSet) {
+	try {
+	    roomClass = RoomClass.fromInt(resultSet.getInt(ROOM_CLASS_ID.v));
+	    status = OrderStatus.fromInt(resultSet.getInt(STATUS_ID.v));
+	    createTime = resultSet.getTimestamp(CREATE_TIME.v);
+	    id = resultSet.getLong(ID.v);
 
-    @Override
-    public Object[] extract() {
-	return new Object[] {
-	    status.ordinal(),
-	    details.getId(),
-	    roomClass.ordinal(),
-	};
+	    details = new OrderDetails(resultSet);
+	} catch (SQLException e) {
+	    throw new IllegalStateException(e);
+	}
     }
 
     public OrderDetails getDetails() {

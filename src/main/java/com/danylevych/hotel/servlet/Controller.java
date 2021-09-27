@@ -1,4 +1,4 @@
-package com.danylevych.hotel.controller;
+package com.danylevych.hotel.servlet;
 
 import java.io.IOException;
 

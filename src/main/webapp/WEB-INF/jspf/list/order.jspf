@@ -1,6 +1,7 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@page import="com.danylevych.hotel.entity.OrderStatus"%>
+<%@ taglib tagdir="/WEB-INF/tags" prefix="tags"%>
 
 <c:set var="entity" value="order" />
 <c:set var="orderBy" value="do?action=list&entity=${entity}&orderBy" />
@@ -68,15 +69,8 @@
         <td>
           <c:choose>
             <c:when test="${order.status == OrderStatus.NEW}">
-              <form action="${homepage}/do" method="post">
-                <input name="action" value="answer" type="hidden">
-                <input name="entity" value="${entity}" type="hidden">
-                <input name="id" value="${order.id}" type="hidden">
-                <input name="v" value="cancel" type="hidden">
-                <button class="btn btn-outline-danger" type="submit">
-                  <fmt:message key="order.cancel" />
-                </button>
-              </form>
+              <tags:post outline="danger" isDisabled="false" name="order.cancel"
+                params="action=answer&entity=${entity}&id=${order.id}&v=cancel" />
             </c:when>
             <c:when test="${order.status == OrderStatus.PENDING}">
               <a href="${answer}=accept" class="btn btn-outline-success fw-bold">

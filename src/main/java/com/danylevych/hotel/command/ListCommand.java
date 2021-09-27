@@ -5,12 +5,15 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.danylevych.hotel.dao.JdbcDao;
-import com.danylevych.hotel.dao.DaoException;
+import com.danylevych.hotel.dao.BookingDao;
+import com.danylevych.hotel.dao.CartDao;
 import com.danylevych.hotel.dao.DaoFactory;
+import com.danylevych.hotel.dao.JdbcDao;
 import com.danylevych.hotel.dao.OrderDao;
 import com.danylevych.hotel.dao.RoomDao;
+import com.danylevych.hotel.entity.User;
 import com.danylevych.hotel.util.Functions;
+import com.danylevych.hotel.util.Session;
 import com.danylevych.hotel.util.Validator;
 
 public class ListCommand implements Command {
@@ -21,11 +24,13 @@ public class ListCommand implements Command {
     private String orderBy;
     private boolean isAscending = true;
 
-    @Override public String execute(HttpServletRequest request,
+    @Override
+    public String execute(HttpServletRequest request,
             HttpServletResponse response) {
 
 	DaoFactory daoFactory = DaoFactory.getInstance(DaoFactory.MY_SQL);
 	String entity = request.getParameter("entity");
+	Object value = null;
 	JdbcDao<?> dao;
 	String url;
 
@@ -38,6 +43,18 @@ public class ListCommand implements Command {
 	case RoomDao.TABLE_NAME:
 	    dao = daoFactory.getRoomDao();
 	    url = "/WEB-INF/menu/roomList.jsp";
+	    break;
+
+	case CartDao.TABLE_NAME:
+	    User user = Session.getUser(request);
+	    value = user.getCart().getOrderDetails();
+	    dao = daoFactory.getCartDao();
+	    url = "/WEB-INF/menu/cart.jsp";
+	    break;
+
+	case BookingDao.TABLE_NAME:
+	    dao = daoFactory.getBookingDao();
+	    url = "/WEB-INF/user/bookingList.jsp";
 	    break;
 
 	default:
@@ -62,15 +79,9 @@ public class ListCommand implements Command {
 	}
 
 	final int offset = (page - 1) * limit;
-	final int nRows;
-	List<?> list;
-
-	try {
-	    list = dao.list(limit, offset, orderBy, isAscending);
-	    nRows = dao.count();
-	} catch (DaoException e) {
-	    throw new IllegalArgumentException(e);
-	}
+	
+	List<?> list = dao.list(limit, offset, orderBy, isAscending, value);
+	final int nRows = dao.count();
 
 	final int x = nRows / limit;
 	final int nPages = x + ((nRows % limit != 0) ? 1 : 0);

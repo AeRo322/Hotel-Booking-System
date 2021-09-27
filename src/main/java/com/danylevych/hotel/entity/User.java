@@ -1,8 +1,18 @@
 package com.danylevych.hotel.entity;
 
-import java.sql.Date;
+import static com.danylevych.hotel.entity.User.Column.CREATE_TIME;
+import static com.danylevych.hotel.entity.User.Column.EMAIL;
+import static com.danylevych.hotel.entity.User.Column.FIRST_NAME;
+import static com.danylevych.hotel.entity.User.Column.ID;
+import static com.danylevych.hotel.entity.User.Column.LAST_NAME;
+import static com.danylevych.hotel.entity.User.Column.ROLE_ID;
 
-public class User implements Entity {
+import java.io.Serializable;
+import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public class User implements Serializable {
 
     private static final long serialVersionUID = 7225500122023129085L;
 
@@ -16,6 +26,7 @@ public class User implements Entity {
     private String email;
 
     private Date createTime;
+    private Cart cart;
 
     public enum Column {
 
@@ -28,6 +39,15 @@ public class User implements Entity {
 
 	public final String v = name().toLowerCase();
 
+    }
+
+    public User(ResultSet resultSet) throws SQLException {
+	role = UserRole.fromInt(resultSet.getInt(ROLE_ID.v));
+	createTime = resultSet.getDate(CREATE_TIME.v);
+	firstName = resultSet.getString(FIRST_NAME.v);
+	lastName = resultSet.getString(LAST_NAME.v);
+	email = resultSet.getString(EMAIL.v);
+	id = resultSet.getInt(ID.v);
     }
 
     public String getFullName() {
@@ -90,11 +110,12 @@ public class User implements Entity {
 	this.createTime = createTime;
     }
 
-    @Override
-    public Object[] extract() {
-	// TODO Auto-generated method stub
-	return null;
+    public Cart getCart() {
+	return cart;
     }
 
+    public void setCart(Cart cart) {
+	this.cart = cart;
+    }
 
 }

@@ -21,4 +21,14 @@ public final class Functions {
 
 	return defaultValue;
     }
+
+    public static String formatSql(Object... values) {
+	StringBuilder stringBuilder = new StringBuilder(values.length * 2 - 1);
+	for (int i = 0; i < values.length; i++) {
+	    stringBuilder.append('?').append(',');
+	}
+	stringBuilder.deleteCharAt(stringBuilder.length());
+	return stringBuilder.toString();
+    }
+
 }

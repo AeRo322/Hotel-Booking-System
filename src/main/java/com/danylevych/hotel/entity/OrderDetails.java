@@ -6,27 +6,32 @@ import static com.danylevych.hotel.entity.OrderDetails.Column.CHECK_OUT;
 import static com.danylevych.hotel.entity.OrderDetails.Column.GUESTS;
 import static com.danylevych.hotel.entity.OrderDetails.Column.USER_ID;
 
+import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
-public class OrderDetails implements Entity {
+import com.danylevych.hotel.dao.DaoFactory;
+
+public class OrderDetails implements Serializable {
 
     private static final long serialVersionUID = -5358042958363538412L;
 
-    private long id;
+    private Long id;
     private int userId;
     private int guests;
 
     private Date checkIn;
     private Date checkOut;
 
-    private List<Integer> rooms;
+    private List<Room> rooms;
 
     public enum Column {
 
@@ -44,28 +49,47 @@ public class OrderDetails implements Entity {
 
     }
 
-    public OrderDetails(HttpServletRequest request) throws ParseException {
-	SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+    public OrderDetails(HttpServletRequest request) {
+	try {
+	    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 
-	checkIn = format.parse(request.getParameter("check_in"));
-	checkOut = format.parse(request.getParameter("check_out"));
+	    checkIn = format.parse(request.getParameter("check_in"));
+	    checkOut = format.parse(request.getParameter("check_out"));
 
-	guests = Integer.parseInt(request.getParameter("guests"));
+	    guests = Integer.parseInt(request.getParameter("guests"));
 
-	User user = (User) request.getSession().getAttribute("user");
-	userId = user.getId();
-	
-	int roomNumber = Integer.parseInt(request.getParameter("roomNumbers"));
-	
-	//rooms.add
+	    HttpSession session = request.getSession();
+	    User user = (User) session.getAttribute("user");
+	    userId = user.getId();
+	} catch (ParseException e) {
+	    throw new IllegalStateException(e);
+	}
     }
 
-    public OrderDetails(ResultSet resultSet) throws SQLException {
-	guests = resultSet.getInt(GUESTS.v);
-	userId = resultSet.getInt(USER_ID.v);
-	checkIn = resultSet.getDate(CHECK_IN.v);
-	checkOut = resultSet.getDate(CHECK_OUT.v);
-	id = resultSet.getLong(DETAILS_ID.v);
+    public OrderDetails(ResultSet resultSet) {
+	try {
+	    guests = resultSet.getInt(GUESTS.v);
+	    userId = resultSet.getInt(USER_ID.v);
+	    checkIn = resultSet.getDate(CHECK_IN.v);
+	    checkOut = resultSet.getDate(CHECK_OUT.v);
+	    id = resultSet.getLong(DETAILS_ID.v);
+
+	    DaoFactory instance = DaoFactory.getInstance();
+	    List<Integer> roomNumbers =
+	            instance.getOrderDetailsDao().getRoomNumbers(id);
+
+	    rooms = instance.getRoomDao()
+	                    .find(roomNumbers.toArray(
+	                            new Integer[roomNumbers.size()]));
+	} catch (SQLException e) {
+	    throw new IllegalStateException(e);
+	}
+    }
+
+    public OrderDetails(User user, Room room) {
+	userId = user.getId();
+	rooms = new ArrayList<>();
+	rooms.add(room);
     }
 
     public int getUserId() {
@@ -100,11 +124,11 @@ public class OrderDetails implements Entity {
 	this.checkOut = checkOut;
     }
 
-    public List<Integer> getRooms() {
+    public List<Room> getRooms() {
 	return rooms;
     }
 
-    public void setRooms(List<Integer> rooms) {
+    public void setRooms(List<Room> rooms) {
 	this.rooms = rooms;
     }
 
@@ -114,12 +138,6 @@ public class OrderDetails implements Entity {
 
     public void setId(long id) {
 	this.id = id;
-    }
-
-    @Override
-    public Object[] extract() {
-	// TODO Auto-generated method stub
-	return null;
     }
 
 }

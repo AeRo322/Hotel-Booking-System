@@ -1,8 +1,5 @@
 package com.danylevych.hotel.dao;
 
-import static com.danylevych.hotel.util.DbUtils.close;
-import static com.danylevych.hotel.util.DbUtils.rollback;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,9 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import com.danylevych.hotel.entity.Entity;
+import com.danylevych.hotel.util.Loggers;
 
-public abstract class JdbcDao<T extends Entity> {
+public abstract class JdbcDao<T> {
 
     protected final DaoFactory daoFactory;
     private final String table;
@@ -31,9 +28,33 @@ public abstract class JdbcDao<T extends Entity> {
     protected abstract T mapEntity(ResultSet resultSet);
 
     public abstract List<T> list(int limit, int offset, String orderBy,
-            boolean isAscending) throws DaoException;
+            boolean isAscending, Object... values);
 
-    protected List<T> list(String sql, Object... values) throws DaoException {
+    public List<Integer> getRoomNumbers(Long orderDetailsId) {
+	final String sql = "SELECT room_number"
+	                   + " FROM order_details_has_room"
+	                   + " WHERE order_details_id = ?";
+
+	List<Integer> list = new ArrayList<>();
+
+	try (Connection c = getConnection();
+	     PreparedStatement s = prepareStatement(c, sql, orderDetailsId);
+	     ResultSet resultSet = s.executeQuery()) {
+
+	    while (resultSet.next()) {
+		final int roomNumber = resultSet.getInt("room_number");
+
+		list.add(roomNumber);
+	    }
+
+	} catch (Exception e) {
+	    throw new IllegalStateException(e);
+	}
+
+	return list;
+    }
+
+    protected List<T> list(String sql, Object... values) {
 	List<T> list = new ArrayList<>();
 
 	try (Connection c = getConnection();
@@ -46,25 +67,13 @@ public abstract class JdbcDao<T extends Entity> {
 	    }
 
 	} catch (Exception e) {
-	    throw new DaoException(e);
+	    throw new IllegalStateException(e);
 	}
 
 	return list;
     }
 
-    protected void update(String sql, Object... values) throws DaoException {
-	try (Connection c = getConnection();
-	     PreparedStatement s = prepareStatement(c, sql, values)) {
-	    final int rowsAffected = s.executeUpdate();
-	    if (rowsAffected <= 0) {
-		throw new DaoException("Couldn't update, no rows affected");
-	    }
-	} catch (SQLException e) {
-	    throw new DaoException(e);
-	}
-    }
-
-    protected T find(String sql, Object... values) throws DaoException {
+    public T find(String sql, Object... values) {
 	try (Connection c = getConnection();
 	     PreparedStatement s = prepareStatement(c, sql, values);
 	     ResultSet resultSet = s.executeQuery()) {
@@ -75,66 +84,57 @@ public abstract class JdbcDao<T extends Entity> {
 
 	    return mapEntity(resultSet);
 	} catch (Exception e) {
-	    throw new DaoException(e);
-	}
-    }
-
-    protected long create(Connection c, String sql, Object... values)
-            throws DaoException {
-	return create(c, false, sql, values);
-    }
-
-    protected long create(Connection c, T t) {
-	try {
-	    return create(c, t, false);
-	} catch (DaoException e) {
 	    throw new IllegalStateException(e);
 	}
     }
 
-    private String formatInsertSql(T t) {
-	String sql = "INSERT INTO %s"
-	             + " (%s)"
-	             + " VALUES(%s)";
-	return sql;
-
-	// String.format(sql, table, t.getInsertColumns(),
-	// t.getInsertColumns());
+    protected void update(Connection c, String sql, Object... values) {
+	update(c, false, sql, values);
     }
 
-    protected long create(Connection c, T t, boolean shouldReturnGeneratedKeys)
-            throws DaoException {
-	final String sql = formatInsertSql(t);
+    protected void create(String sql, Object... values) {
+	update(sql, values);
+    }
 
-	try (PreparedStatement s = prepareStatement(c, sql,
-	        shouldReturnGeneratedKeys, t.extract())) {
-	    final int rowsAffected = s.executeUpdate();
-	    if (rowsAffected <= 0) {
-		throw new DaoException("Couldn't insert, no rows affected");
-	    }
-
-	    return shouldReturnGeneratedKeys ? getGeneratedKey(s) : 0;
-	} catch (SQLException e) {
-	    throw new DaoException(e);
-	}
+    protected long create(Connection c, String sql, Object... values) {
+	return create(c, false, sql, values);
     }
 
     protected long create(Connection c, boolean shouldReturnGeneratedKeys,
-            String sql, Object... values) throws DaoException {
+            String sql, Object... values) {
+
+	List<Long> keys = update(c, shouldReturnGeneratedKeys, sql, values);
+	if (keys == null) {
+	    return 0;
+	}
+	return keys.get(0);
+    }
+
+    protected int update(String sql, Object... values) {
+	try (Connection c = getConnection();
+	     PreparedStatement s = prepareStatement(c, sql, values)) {
+	    return s.executeUpdate();
+	} catch (SQLException e) {
+	    throw new IllegalStateException(e);
+	}
+    }
+
+    protected List<Long> update(Connection c, boolean shouldReturnGeneratedKeys,
+            String sql, Object... values) {
 	try (PreparedStatement s =
 	        prepareStatement(c, sql, shouldReturnGeneratedKeys, values)) {
 	    final int rowsAffected = s.executeUpdate();
 	    if (rowsAffected <= 0) {
-		throw new DaoException("Couldn't insert, no rows affected");
+		throw new IllegalStateException("No rows affected");
 	    }
 
-	    return shouldReturnGeneratedKeys ? getGeneratedKey(s) : 0;
+	    return shouldReturnGeneratedKeys ? getGeneratedKeys(s) : null;
 	} catch (SQLException e) {
-	    throw new DaoException(e);
+	    throw new IllegalStateException(e);
 	}
     }
 
-    public int count() throws DaoException {
+    public int count() {
 	String sql = "SELECT COUNT(*)"
 	             + " FROM %s";
 
@@ -150,59 +150,62 @@ public abstract class JdbcDao<T extends Entity> {
 
 	    return resultSet.getInt(1);
 	} catch (SQLException e) {
-	    throw new DaoException(e);
+	    throw new IllegalStateException(e);
 	}
     }
 
-    private long getGeneratedKey(Statement statement) throws DaoException {
+    private List<Long> getGeneratedKeys(Statement statement) {
+	List<Long> keys = new ArrayList<>();
+
 	try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
-	    if (!generatedKeys.next()) {
-		throw new DaoException("Result set is empty");
+
+	    while (generatedKeys.next()) {
+		final long generatedKey = generatedKeys.getLong(1);
+		if (generatedKey == 0) {
+		    throw new IllegalStateException(
+		            "Generated key equals to 0");
+		}
+		keys.add(generatedKey);
 	    }
 
-	    final long generatedKey = generatedKeys.getLong(1);
-	    if (generatedKey == 0) {
-		throw new DaoException("Generated key equals to 0");
-	    }
-
-	    return generatedKey;
+	    return keys;
 	} catch (SQLException e) {
-	    throw new DaoException(e);
+	    throw new IllegalStateException(e);
 	}
     }
 
-    protected void executeAsTransaction(Consumer<Connection> function)
-            throws DaoException {
+    protected void transaction(Consumer<Connection> function) {
 	Connection connection = null;
 
 	try {
-	    connection = daoFactory.getTransactionConnection();
+	    connection = daoFactory.getConnection();
+	    connection.setAutoCommit(false);
 	    function.accept(connection);
 	    connection.commit();
 	} catch (Exception e) {
 	    rollback(connection);
-	    throw new DaoException(e);
+	    throw new IllegalStateException(e);
 	} finally {
 	    close(connection);
 	}
     }
 
-    private PreparedStatement prepareStatement(Connection connection,
-            String sql, Object... values) throws SQLException {
+    protected PreparedStatement prepareStatement(Connection connection,
+            String sql, Object... values) {
 	return prepareStatement(connection, sql, false, values);
     }
 
     private PreparedStatement prepareStatement(Connection connection,
-            String sql, boolean shouldReturnGeneratedKeys, Object... values)
-            throws SQLException {
-	PreparedStatement statement = connection.prepareStatement(sql,
-	        shouldReturnGeneratedKeys ? Statement.RETURN_GENERATED_KEYS
-	                                  : Statement.NO_GENERATED_KEYS);
+            String sql, boolean shouldReturnGeneratedKeys, Object... values) {
+	PreparedStatement statement = null;
 	try {
+	    statement = connection.prepareStatement(sql,
+	            shouldReturnGeneratedKeys ? Statement.RETURN_GENERATED_KEYS
+	                                      : Statement.NO_GENERATED_KEYS);
 	    setValues(statement, values);
 	} catch (Exception e) {
-	    statement.close();
-	    throw e;
+	    close(statement);
+	    throw new IllegalStateException(e);
 	}
 	return statement;
     }
@@ -215,4 +218,23 @@ public abstract class JdbcDao<T extends Entity> {
 	}
     }
 
+    protected void rollback(Connection connection) {
+	if (connection != null) {
+	    try {
+		connection.rollback();
+	    } catch (SQLException e) {
+		Loggers.log(e);
+	    }
+	}
+    }
+
+    protected void close(AutoCloseable autoCloseable) {
+	if (autoCloseable != null) {
+	    try {
+		autoCloseable.close();
+	    } catch (Exception e) {
+		Loggers.log(e);
+	    }
+	}
+    }
 }

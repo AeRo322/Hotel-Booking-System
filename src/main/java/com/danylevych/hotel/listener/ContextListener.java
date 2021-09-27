@@ -9,6 +9,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 
+import com.danylevych.hotel.thread.PaymentTracker;
 import com.danylevych.hotel.util.Loggers;
 
 @WebListener
@@ -20,7 +21,8 @@ public class ContextListener implements ServletContextListener {
 
 	String logPath = context.getRealPath("/WEB-INF/events.log");
 	System.setProperty("logPath", logPath);
-	Loggers.log("Logs path: " + logPath);
+	Loggers.log("Logs path: "
+	            + logPath);
 
 	String localesPath = context.getInitParameter("localesPath");
 	localesPath = context.getRealPath(localesPath);
@@ -33,14 +35,18 @@ public class ContextListener implements ServletContextListener {
 	    Properties locales = new Properties();
 	    locales.load(fileReader);
 	    context.setAttribute("locales", locales);
-	    Loggers.log("Locales: " + locales);
+	    Loggers.log("Locales: "
+	                + locales);
 	} catch (IOException e) {
 	    throw new IllegalStateException(e);
 	}
-	
+
 	String homepage = context.getContextPath();
 	context.setAttribute("homepage", homepage);
-	Loggers.log("Homepage: " + homepage);
+	Loggers.log("Homepage: "
+	            + homepage);
+
+	new PaymentTracker().start();
     }
 
 }

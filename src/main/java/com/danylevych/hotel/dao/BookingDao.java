@@ -1,25 +1,28 @@
 package com.danylevych.hotel.dao;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 
 import com.danylevych.hotel.entity.Booking;
 
 public abstract class BookingDao extends JdbcDao<Booking> {
+    
+    public static final String TABLE_NAME = "booking";
 
     protected BookingDao(DaoFactory daoFactory) {
-	super(daoFactory, "booking");
+	super(daoFactory, TABLE_NAME);
     }
 
-    public abstract void create(Booking booking);
+    public abstract void create(Booking booking) ;
 
     @Override
     protected Booking mapEntity(ResultSet resultSet) {
-        try {    
-            return new Booking(resultSet);
-        } catch (SQLException e) {
-            throw new IllegalStateException(e);
-        }
+        return new Booking(resultSet);
     }
+
+    public abstract Booking find(Long bookingId) ;
+
+    public abstract void update(Booking booking) ;
+
+    public abstract void closeExpiredBookings() ;
 
 }

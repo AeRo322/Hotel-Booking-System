@@ -39,13 +39,15 @@
             </a>
           </li>
           <li class="nav-item">
-            <a href="${homepage}/do?action=list&entity=booking&orderBy=create_time"
+            <a
+              href="${homepage}/do?action=list&entity=booking&orderBy=create_time"
               class="nav-link ${Page.highlightIfActive(currentPage, Page.BOOKING_LIST)}">
               <fmt:message key="booking.list" />
             </a>
           </li>
           <li class="nav-item">
-            <a href="${homepage}/do?action=list&entity=order&orderBy=create_time"
+            <a
+              href="${homepage}/do?action=list&entity=order&orderBy=create_time"
               class="nav-link ${Page.highlightIfActive(currentPage, Page.ORDER_LIST)}">
               <fmt:message key="order.list" />
             </a>
@@ -57,6 +59,12 @@
     <ul class="navbar-nav ms-auto">
       <c:choose>
         <c:when test="${sessionScope.user != null}">
+          <li class="nav-item">
+            <a class="nav-link"
+              href="${homepage}/do?action=list&entity=cart&orderBy=number">
+              <em class="bi bi-cart"></em>
+            </a>
+          </li>
           <li class="nav-item dropdown">
             <a data-bs-toggle="dropdown" href="#"
               class="nav-link dropdown-toggle">

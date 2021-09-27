@@ -1,7 +1,5 @@
 package com.danylevych.hotel.dao.mysql;
 
-import static com.danylevych.hotel.util.DbUtils.close;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -11,6 +9,7 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import com.danylevych.hotel.dao.BookingDao;
+import com.danylevych.hotel.dao.CartDao;
 import com.danylevych.hotel.dao.DaoFactory;
 import com.danylevych.hotel.dao.OrderDao;
 import com.danylevych.hotel.dao.OrderDetailsDao;
@@ -19,11 +18,12 @@ import com.danylevych.hotel.dao.UserDao;
 
 public class MySqlDaoFactory extends DaoFactory {
 
-    private OrderDetailsDao orderDetailsDao = new MySqlOrderDetailsDao(this);
-    private BookingDao bookingDao = new MySqlBookingDao(this);
-    private OrderDao requestDao = new MySqlOrderDao(this);
-    private UserDao userDao = new MySqlUserDao(this);
+    private CartDao cartDao = new MySqlCartDao(this);
     private RoomDao roomDao = new MySqlRoomDao(this);
+    private BookingDao bookingDao = new MySqlBookingDao(this);
+    private OrderDetailsDao orderDetailsDao = new MySqlOrderDetailsDao(this);
+    private OrderDao orderDao = new MySqlOrderDao(this);
+    private UserDao userDao = new MySqlUserDao(this);
 
     private static final DataSource dataSource;
 
@@ -35,18 +35,6 @@ public class MySqlDaoFactory extends DaoFactory {
 	} catch (NamingException e) {
 	    throw new IllegalStateException(e);
 	}
-    }
-
-    @Override
-    public Connection getTransactionConnection() throws SQLException {
-	Connection connection = dataSource.getConnection();
-	try {
-	    connection.setAutoCommit(false);
-	} catch (SQLException e) {
-	    close(connection);
-	    throw e;
-	}
-	return connection;
     }
 
     @Override
@@ -66,7 +54,7 @@ public class MySqlDaoFactory extends DaoFactory {
 
     @Override
     public OrderDao getOrderDao() {
-	return requestDao;
+	return orderDao;
     }
 
     @Override
@@ -77,6 +65,11 @@ public class MySqlDaoFactory extends DaoFactory {
     @Override
     public RoomDao getRoomDao() {
 	return roomDao;
+    }
+
+    @Override
+    public CartDao getCartDao() {
+	return cartDao;
     }
 
 }

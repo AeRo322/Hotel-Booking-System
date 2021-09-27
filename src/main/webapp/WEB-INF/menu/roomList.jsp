@@ -10,7 +10,7 @@
   <fmt:message key="room.list" />
 </title>
 </head>
-<body class="lead h-100 bg-dark text-light">
+<body class="lead h-100 bg-dark text-light mb-auto d-flex flex-column">
   <%@ include file="/WEB-INF/jspf/navbar.jspf"%>
   <%@ include file="/WEB-INF/jspf/list/room.jspf"%>
 </body>

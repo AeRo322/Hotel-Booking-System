@@ -4,6 +4,7 @@ import static com.danylevych.hotel.entity.Booking.Column.CREATE_TIME;
 import static com.danylevych.hotel.entity.Booking.Column.ID;
 import static com.danylevych.hotel.entity.Booking.Column.STATUS_ID;
 
+import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -11,7 +12,7 @@ import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 
-public class Booking implements Entity {
+public class Booking implements Serializable {
 
     private static final long serialVersionUID = -3301985661998346827L;
 
@@ -31,16 +32,21 @@ public class Booking implements Entity {
 
     }
 
-    public Booking(ResultSet resultSet) throws SQLException {
-	setStatus(BookingStatus.fromInt(resultSet.getInt(STATUS_ID.v)));
-	createTime = resultSet.getTimestamp(CREATE_TIME.v);
-	setId(resultSet.getLong(ID.v));
+    public Booking(ResultSet resultSet) {
+	try {
+	    setStatus(BookingStatus.fromInt(resultSet.getInt(STATUS_ID.v)));
+	    createTime = resultSet.getTimestamp(CREATE_TIME.v);
+	    setId(resultSet.getLong(ID.v));
 
-	setDetails(new OrderDetails(resultSet));
+	    setDetails(new OrderDetails(resultSet));
+	} catch (SQLException e) {
+	    throw new IllegalStateException(e);
+	}
     }
 
     public Booking(HttpServletRequest request) throws ParseException {
 	details = new OrderDetails(request);
+	status = BookingStatus.UNPAID;
     }
 
     public Date getCreateTime() {
@@ -49,12 +55,6 @@ public class Booking implements Entity {
 
     public void setCreateTime(Date createTime) {
 	this.createTime = createTime;
-    }
-
-    @Override
-    public Object[] extract() {
-	// TODO Auto-generated method stub
-	return null;
     }
 
     public OrderDetails getDetails() {

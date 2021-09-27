@@ -1,5 +1,7 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@page import="com.danylevych.hotel.entity.RoomStatus"%>
+<%@ taglib tagdir="/WEB-INF/tags" prefix="tags"%>
 
 <c:set var="entity" value="room" />
 <c:set var="orderBy" value="do?action=list&entity=${entity}&orderBy" />
@@ -53,10 +55,9 @@
           <fmt:message key="room.status.${room.roomStatus}" />
         </td>
         <td>
-          <a class="btn btn-outline-primary"
-            href="${homepage}/do?action=book&roomNumber=${room.number}">
-            <fmt:message key="room.book_now" />
-          </a>
+          <tags:post outline="primary" name="booking.add"
+            params="action=cart&roomNumber=${room.number}"
+            isDisabled="${room.roomStatus != RoomStatus.AVAILABLE}" />
         </td>
       </tr>
     </c:forEach>

@@ -1,0 +1,43 @@
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@page import="java.time.LocalDate"%>
+
+<c:set var="today" value="${LocalDate.now()}" />
+<c:set var="tomorrow" value="${today.plusDays(1)}" />
+
+<form class="container p-3" action="do" method="post">
+  <input name="action" value="book" type="hidden">
+
+  <div class="row mb-3">
+    <label for=check_in class="col-2 col-form-label">
+      <fmt:message key="order.details.check_in" />
+    </label>
+    <div class="col-auto">
+      <input name=check_in type=date value="${today}" min="${today}"
+        class="form-control" id=check_in required>
+    </div>
+
+    <label for=check_out class="col-2 col-form-label">
+      <fmt:message key="order.details.check_out" />
+    </label>
+    <div class="col-auto">
+      <input name=check_out type=date value="${tomorrow}" min="${tomorrow}"
+        class="form-control" id=check_out required>
+    </div>
+
+    <div class="row mb-3">
+      <label for=guests class="col-2 col-form-label">
+        <fmt:message key="order.details.guests" />
+      </label>
+      <div class="col-auto">
+        <input name="guests" type=number value=1 min=1 max=99 required
+          class="form-control" id=guests>
+      </div>
+    </div>
+
+    <button type=submit
+      class="btn btn-outline-light ${empty sessionScope.orderId ? 'disabled' : '' }">
+      <fmt:message key="cart.book_now" />
+    </button>
+  </div>
+</form>

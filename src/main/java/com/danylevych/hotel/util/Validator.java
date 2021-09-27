@@ -14,12 +14,20 @@ public final class Validator {
     private static final List<String> ROOM_VALID_SORT_FIELDS = Arrays.asList(
             "number", "price", "status_id", "capacity", "class_id");
 
+    private static final List<String> CART_VALID_SORT_FIELDS = Arrays.asList(
+            "number", "price", "capacity", "class_id");
+    
+    private static final List<String> BOOKING_VALID_SORT_FIELDS = Arrays.asList(
+            "create_time", "check_in", "check_out", "guests", "status_id");
+
     private static final Map<String, List<String>> VALID_SORT_FIELDS =
             new HashMap<>();
 
     static {
 	VALID_SORT_FIELDS.put("order", ORDER_VALID_SORT_FIELDS);
 	VALID_SORT_FIELDS.put("room", ROOM_VALID_SORT_FIELDS);
+	VALID_SORT_FIELDS.put("booking", BOOKING_VALID_SORT_FIELDS);
+	VALID_SORT_FIELDS.put("cart", CART_VALID_SORT_FIELDS);
     }
 
     private Validator() {

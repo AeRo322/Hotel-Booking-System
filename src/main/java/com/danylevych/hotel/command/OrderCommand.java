@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.danylevych.hotel.dao.DaoFactory;
 import com.danylevych.hotel.entity.Order;
 import com.danylevych.hotel.entity.User;
+import com.danylevych.hotel.util.Session;
 
 public class OrderCommand implements Command {
 
@@ -13,9 +14,10 @@ public class OrderCommand implements Command {
     public String execute(HttpServletRequest request,
             HttpServletResponse response) {
 
-	User user = (User) request.getSession().getAttribute("user");
+	User user = Session.getUser(request);
 	if (user == null) {
-	    return "auth/login.jsp";
+	    return request.getContextPath()
+	           + "/auth/login.jsp";
 	}
 
 	try {
@@ -24,7 +26,7 @@ public class OrderCommand implements Command {
 	    throw new IllegalArgumentException(e);
 	}
 
-	return "user/client.jsp";
+	return request.getHeader("referer");
     }
 
 }
