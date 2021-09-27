@@ -10,15 +10,21 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import com.danylevych.hotel.util.Loggers;
+import com.danylevych.hotel.util.SQL;
 
 public abstract class JdbcDao<T> {
 
     protected final DaoFactory daoFactory;
+    private final Object[] columns;
     private final String table;
+    private final int n;
 
-    protected JdbcDao(DaoFactory daoFactory, String table) {
+    protected JdbcDao(DaoFactory daoFactory, String table, Object[] columns,
+                      int n) {
 	this.daoFactory = daoFactory;
-	this.table = '`' + table + '`';
+	this.columns = columns;
+	this.table = table;
+	this.n = n;
     }
 
     protected Connection getConnection() throws SQLException {
@@ -27,36 +33,23 @@ public abstract class JdbcDao<T> {
 
     protected abstract T mapEntity(ResultSet resultSet);
 
+    private String generateSqlUpdate() {
+	return SQL.generateSqlUpdate(columns, n, table);
+    }
+
+    private String generateSqlInsert() {
+	return SQL.generateSqlInsert(columns, n, table);
+    }
+
+    protected abstract String generateSqlFind(int n);
+
+    protected abstract Object[] getValues(T t);
+
     public abstract List<T> list(int limit, int offset, String orderBy,
             boolean isAscending, Object... values);
 
-    public List<Integer> getRoomNumbers(Long orderDetailsId) {
-	final String sql = "SELECT room_number"
-	                   + " FROM order_details_has_room"
-	                   + " WHERE order_details_id = ?";
-
-	List<Integer> list = new ArrayList<>();
-
-	try (Connection c = getConnection();
-	     PreparedStatement s = prepareStatement(c, sql, orderDetailsId);
-	     ResultSet resultSet = s.executeQuery()) {
-
-	    while (resultSet.next()) {
-		final int roomNumber = resultSet.getInt("room_number");
-
-		list.add(roomNumber);
-	    }
-
-	} catch (Exception e) {
-	    throw new IllegalStateException(e);
-	}
-
-	return list;
-    }
-
     protected List<T> list(String sql, Object... values) {
 	List<T> list = new ArrayList<>();
-
 	try (Connection c = getConnection();
 	     PreparedStatement s = prepareStatement(c, sql, values);
 	     ResultSet resultSet = s.executeQuery()) {
@@ -69,45 +62,80 @@ public abstract class JdbcDao<T> {
 	} catch (Exception e) {
 	    throw new IllegalStateException(e);
 	}
-
 	return list;
     }
 
-    public T find(String sql, Object... values) {
+    public List<T> find(Object... ids) {
+	return list(generateSqlFind(ids.length), ids);
+    }
+
+    public T find(long id) {
+	List<T> list = list(generateSqlFind(1), id);
+	return list.isEmpty() ? null : list.get(0);
+    }
+
+    protected T find(String sql, Object... values) {
+	List<T> list = list(sql, values);
+	return list.isEmpty() ? null : list.get(0);
+    }
+
+    public int count() {
+	String sql = "SELECT COUNT(*)"
+	             + " FROM `%s`";
+
+	sql = String.format(sql, table);
+
 	try (Connection c = getConnection();
-	     PreparedStatement s = prepareStatement(c, sql, values);
+	     PreparedStatement s = prepareStatement(c, sql);
 	     ResultSet resultSet = s.executeQuery()) {
 
 	    if (!resultSet.next()) {
-		return null;
+		return 0;
 	    }
 
-	    return mapEntity(resultSet);
-	} catch (Exception e) {
+	    return resultSet.getInt(1);
+	} catch (SQLException e) {
 	    throw new IllegalStateException(e);
 	}
+    }
+
+    public void update(Connection c, T t) {
+	update(c, false, generateSqlUpdate(), getValues(t));
+    }
+
+    public void update(T t) {
+	update(generateSqlUpdate(), getValues(t));
     }
 
     protected void update(Connection c, String sql, Object... values) {
 	update(c, false, sql, values);
     }
 
-    protected void create(String sql, Object... values) {
-	update(sql, values);
+    public long create(Connection c, boolean shouldReturnGeneratedKeys, T t) {
+	return create(c, shouldReturnGeneratedKeys, generateSqlInsert(),
+	        getValues(t));
+    }
+
+    public void create(T t) {
+	create(generateSqlInsert(), getValues(t));
+    }
+
+    public long create(Connection c, T t) {
+	return create(c, false, generateSqlInsert(), getValues(t));
     }
 
     protected long create(Connection c, String sql, Object... values) {
 	return create(c, false, sql, values);
     }
 
+    protected int create(String sql, Object... values) {
+	return update(sql, values);
+    }
+
     protected long create(Connection c, boolean shouldReturnGeneratedKeys,
             String sql, Object... values) {
-
 	List<Long> keys = update(c, shouldReturnGeneratedKeys, sql, values);
-	if (keys == null) {
-	    return 0;
-	}
-	return keys.get(0);
+	return keys == null ? 0 : keys.get(0);
     }
 
     protected int update(String sql, Object... values) {
@@ -134,40 +162,16 @@ public abstract class JdbcDao<T> {
 	}
     }
 
-    public int count() {
-	String sql = "SELECT COUNT(*)"
-	             + " FROM %s";
-
-	sql = String.format(sql, table);
-
-	try (Connection c = getConnection();
-	     PreparedStatement s = prepareStatement(c, sql);
-	     ResultSet resultSet = s.executeQuery()) {
-
-	    if (!resultSet.next()) {
-		return 0;
-	    }
-
-	    return resultSet.getInt(1);
-	} catch (SQLException e) {
-	    throw new IllegalStateException(e);
-	}
-    }
-
     private List<Long> getGeneratedKeys(Statement statement) {
 	List<Long> keys = new ArrayList<>();
-
 	try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
-
 	    while (generatedKeys.next()) {
 		final long generatedKey = generatedKeys.getLong(1);
 		if (generatedKey == 0) {
-		    throw new IllegalStateException(
-		            "Generated key equals to 0");
+		    throw new IllegalStateException("Generated key is 0");
 		}
 		keys.add(generatedKey);
 	    }
-
 	    return keys;
 	} catch (SQLException e) {
 	    throw new IllegalStateException(e);
@@ -176,7 +180,6 @@ public abstract class JdbcDao<T> {
 
     protected void transaction(Consumer<Connection> function) {
 	Connection connection = null;
-
 	try {
 	    connection = daoFactory.getConnection();
 	    connection.setAutoCommit(false);
@@ -237,4 +240,5 @@ public abstract class JdbcDao<T> {
 	    }
 	}
     }
+
 }

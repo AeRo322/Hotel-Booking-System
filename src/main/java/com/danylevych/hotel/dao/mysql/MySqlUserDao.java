@@ -1,8 +1,7 @@
 package com.danylevych.hotel.dao.mysql;
 
-import static com.danylevych.hotel.util.Enums.getSequence;
-
-import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.danylevych.hotel.dao.DaoFactory;
 import com.danylevych.hotel.dao.UserDao;
@@ -15,20 +14,18 @@ public class MySqlUserDao extends UserDao {
     }
 
     @Override
-    public User find(String email, String password)  {
+    public User find(String email, String password) {
 	String sql = "SELECT %s"
 	             + " FROM user"
 	             + " WHERE email = ? AND password = SHA2(?, 512)";
 
-	sql = String.format(sql, getSequence(User.Column.class));
+	final String selectColumns = Stream.of(User.Column.values())
+	                                   .map(Enum::name)
+	                                   .collect(Collectors.joining(","));
+
+	sql = String.format(sql, selectColumns);
 
 	return find(sql, email, password);
-    }
-
-    @Override
-    public List<User> list(int limit, int offset, String orderBy,
-            boolean isAscending, Object... values)  {
-	throw new UnsupportedOperationException();
     }
 
 }

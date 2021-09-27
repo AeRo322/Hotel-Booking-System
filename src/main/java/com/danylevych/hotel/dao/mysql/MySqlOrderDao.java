@@ -7,6 +7,7 @@ import com.danylevych.hotel.dao.OrderDao;
 import com.danylevych.hotel.dao.OrderDetailsDao;
 import com.danylevych.hotel.entity.Order;
 import com.danylevych.hotel.entity.OrderDetails;
+import com.danylevych.hotel.util.SQL;
 
 public class MySqlOrderDao extends OrderDao {
 
@@ -15,58 +16,40 @@ public class MySqlOrderDao extends OrderDao {
     }
 
     @Override
-    public void create(Order order)  {
-	String sql = "INSERT INTO `order`"
-	             + " (details_id, room_class_id, status_id)"
-	             + " VALUES(?, ?, ?)";
-
+    public void create(Order order) {
 	transaction(c -> {
 	    OrderDetails orderDetails = order.getDetails();
 	    OrderDetailsDao orderDetailsDao = daoFactory.getOrderDetailsDao();
-	    final long detailsId = orderDetailsDao.create(c, orderDetails);
-
-	    final int roomClassId = order.getRoomClass().ordinal();
-	    final int statusId = order.getStatus().ordinal();
-
-	    create(c, sql, detailsId, roomClassId, statusId);
+	    orderDetails.setId(orderDetailsDao.create(c, true, orderDetails));
+	    order.setDetails(orderDetails);
+	    create(c, order);
 	});
-
-    }
-
-    @Override
-    public void update(Order order)  {
-	String sql = "UPDATE `order`"
-	             + " SET"
-	             + " status_id = ?"
-	             + " WHERE id = ?";
-
-	int statusId = order.getStatus().ordinal();
-	long id = order.getId();
-
-	update(sql, statusId, id);
-    }
-
-    @Override
-    public Order find(long id)  {
-	String sql = "SELECT *"
-	             + " FROM `order`, order_details"
-	             + " WHERE `order`.id = ?";
-
-	return find(sql, id);
     }
 
     @Override
     public List<Order> list(int limit, int offset, String orderBy,
-            boolean isAscending, Object... values)  {
+            boolean isAscending, Object... values) {
 	String sql = "SELECT *"
-	             + " FROM `order`, order_details"
-	             + " WHERE `order`.id = order_details.id"
+	             + " FROM `order`"
+	             + " JOIN order_details"
+	             + " ON order_details.id = details_id"
+	             + " WHERE user_id = ?"
 	             + " ORDER BY %s %s"
 	             + " LIMIT ? OFFSET ?";
 
 	sql = String.format(sql, orderBy, isAscending ? "ASC" : "DESC");
 
-	return list(sql, limit, offset);
+	Long userId = (Long) values[0];
+
+	return list(sql, userId, limit, offset);
+    }
+
+    @Override
+    protected String generateSqlFind(int n) {
+	return SQL.generateSqlFind(TABLE_NAME
+	                           + "."
+	                           + Order.Column.ID,
+	        n, TABLE_NAME, OrderDetailsDao.TABLE_NAME);
     }
 
 }

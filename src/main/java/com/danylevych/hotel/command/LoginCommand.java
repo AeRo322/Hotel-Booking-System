@@ -26,7 +26,7 @@ public class LoginCommand implements Command {
 	}
 	request.getSession().setAttribute("user", user);
 
-	return request.getHeader("referer");
+	return request.getContextPath();
     }
 
 }

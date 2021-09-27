@@ -27,25 +27,23 @@ public class CartCommand implements Command {
 	OrderDetailsDao orderDetailsDao = daoFactory.getOrderDetailsDao();
 	int roomNumber = Integer.parseInt(request.getParameter("roomNumber"));
 
-	Room room = daoFactory.getRoomDao().find(roomNumber).get(0);
+	Room room = daoFactory.getRoomDao().find(roomNumber);
 	OrderDetails orderDetails = new OrderDetails(user, room);
 
 	CartDao cartDao = daoFactory.getCartDao();
 	Cart cart = user.getCart();
 
 	if (cart == null) {
-	    long orderDetailsId = orderDetailsDao.create(orderDetails);
-	    orderDetails.setId(orderDetailsId);
 	    cart = new Cart(user, orderDetails);
-	    user.setCart(cart);
 	    cartDao.create(cart);
+	    user.setCart(cart);
 	    Session.saveUser(request, user);
 	} else {
 	    orderDetails.setId(cart.getOrderDetails().getId());
 	    orderDetailsDao.addRoomToOrder(orderDetails);
 	}
 
-	return request.getHeader("referer");
+	return request.getHeader("referer") + "#";
     }
 
 }

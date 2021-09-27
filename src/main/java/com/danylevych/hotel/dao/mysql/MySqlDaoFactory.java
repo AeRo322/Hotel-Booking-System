@@ -18,11 +18,11 @@ import com.danylevych.hotel.dao.UserDao;
 
 public class MySqlDaoFactory extends DaoFactory {
 
+    private OrderDetailsDao orderDetailsDao = new MySqlOrderDetailsDao(this);
+    private BookingDao bookingDao = new MySqlBookingDao(this);
+    private OrderDao orderDao = new MySqlOrderDao(this);
     private CartDao cartDao = new MySqlCartDao(this);
     private RoomDao roomDao = new MySqlRoomDao(this);
-    private BookingDao bookingDao = new MySqlBookingDao(this);
-    private OrderDetailsDao orderDetailsDao = new MySqlOrderDetailsDao(this);
-    private OrderDao orderDao = new MySqlOrderDao(this);
     private UserDao userDao = new MySqlUserDao(this);
 
     private static final DataSource dataSource;

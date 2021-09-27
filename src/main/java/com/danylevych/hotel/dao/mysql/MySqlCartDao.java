@@ -7,8 +7,9 @@ import java.util.List;
 
 import com.danylevych.hotel.dao.CartDao;
 import com.danylevych.hotel.dao.DaoFactory;
+import com.danylevych.hotel.dao.OrderDetailsDao;
 import com.danylevych.hotel.entity.Cart;
-import com.danylevych.hotel.entity.User;
+import com.danylevych.hotel.entity.OrderDetails;
 
 public class MySqlCartDao extends CartDao {
 
@@ -16,6 +17,18 @@ public class MySqlCartDao extends CartDao {
 
     protected MySqlCartDao(DaoFactory daoFactory) {
 	super(daoFactory);
+    }
+
+    @Override
+    public void create(Cart cart) {
+	transaction(c -> {
+	    OrderDetails orderDetails = cart.getOrderDetails();
+	    OrderDetailsDao orderDetailsDao = daoFactory.getOrderDetailsDao();
+	    orderDetails.setId(orderDetailsDao.create(c, true, orderDetails));
+	    orderDetailsDao.addRoomToOrder(c, orderDetails);
+	    cart.setOrderDetails(orderDetails);
+	    create(c, cart);
+	});
     }
 
     @Override
@@ -30,45 +43,35 @@ public class MySqlCartDao extends CartDao {
     public List<Cart> list(int limit, int offset, String orderBy,
             boolean isAscending, Object... values) {
 	String sql = "SELECT *"
-	             + " FROM order_details"
-	             + " WHERE order_details_id"
+	             + " FROM room"
+	             + " JOIN order_details"
+	             + " ON order_details.id = %d"
+	             + " JOIN cart"
+	             + " ON cart.order_details_id = %d"
+	             + " WHERE number IN (%s)"
 	             + " ORDER BY %s %s"
 	             + " LIMIT ? OFFSET ?";
 
-	List<Integer> rooms = getRoomNumbers((Long) values[0]);
-
-	if (rooms.isEmpty()) {
+	Cart cart = (Cart) values[0];
+	if (cart == null) {
 	    return Collections.emptyList();
 	}
 
+	final long orderDetailsId = cart.getOrderDetails().getId();
+	OrderDetailsDao orderDetailsDao = daoFactory.getOrderDetailsDao();
+	List<Integer> rooms = orderDetailsDao.getRoomNumbers(orderDetailsId);
+
 	size = rooms.size();
-	sql = String.format(sql, formatSql(rooms.toArray()), orderBy,
+	sql = String.format(sql, orderDetailsId, orderDetailsId,
+	        formatSql(rooms.toArray()), orderBy,
 	        isAscending ? "ASC" : "DESC");
 
 	return list(sql, limit, offset);
     }
 
     @Override
-    public int count()  {
+    public int count() {
 	return size;
-    }
-
-    @Override
-    public Long find(User user)  {
-	String sql = "SELECT order_details_id"
-	             + " FROM cart"
-	             + " WHERE user_id = ?";
-
-	return find(sql, user.getId()).getOrderDetails().getId();
-    }
-
-    @Override
-    public void create(Cart cart)  {
-	String sql = "INSERT INTO cart"
-	             + " (user_id, order_details_id)"
-	             + " VALUES(?, ?)";
-
-	create(sql, cart.getUserId(), cart.getOrderDetails().getId());
     }
 
 }

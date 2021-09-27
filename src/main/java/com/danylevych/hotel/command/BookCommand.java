@@ -1,7 +1,5 @@
 package com.danylevych.hotel.command;
 
-import java.text.ParseException;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -22,28 +20,24 @@ public class BookCommand implements Command {
 	    return "auth/login.jsp";
 	}
 
+	BookingDao bookingDao = DaoFactory.getInstance().getBookingDao();
+	Long bookingId = Long.parseLong(request.getParameter("id"));
+	Booking booking = bookingDao.find(bookingId);
 	String answer = request.getParameter("v");
-	try {
-	    BookingDao bookingDao = DaoFactory.getInstance().getBookingDao();
-	    Long bookingId = Long.parseLong(request.getParameter("id"));
-	    Booking booking = bookingDao.find(bookingId);
 
-	    switch (answer) {
-	    case "pay":
-		booking.setStatus(BookingStatus.PAID);
-		bookingDao.update(booking);
-		break;
+	switch (answer) {
+	case "pay":
+	    booking.setStatus(BookingStatus.PAID);
+	    bookingDao.update(booking);
+	    break;
 
-	    case "cancel":
-		booking.setStatus(BookingStatus.COMPLETED);
-		bookingDao.update(booking);
-		break;
+	case "cancel":
+	    booking.setStatus(BookingStatus.COMPLETED);
+	    bookingDao.update(booking);
+	    break;
 
-	    default:
-		bookingDao.create(new Booking(request));
-	    }
-	} catch (ParseException e) {
-	    throw new IllegalStateException(e);
+	default:
+	    bookingDao.create(new Booking(request));
 	}
 
 	return request.getHeader("referer");

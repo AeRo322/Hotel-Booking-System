@@ -16,19 +16,20 @@ public class Order implements Serializable {
 
     private static final long serialVersionUID = 6192785431279133934L;
 
-    private long id;
-    private OrderStatus status;
-    private OrderDetails details;
-
     private RoomClass roomClass;
+    private OrderDetails details;
+    private OrderStatus status;
+
     private Date createTime;
+    private long id;
 
     public enum Column {
 
-	ID,
-	STATUS_ID,
-	DETAILS_ID,
 	ROOM_CLASS_ID,
+	DETAILS_ID,
+	STATUS_ID,
+
+	ID,
 	CREATE_TIME;
 
 	public final String v = name().toLowerCase();
@@ -36,11 +37,11 @@ public class Order implements Serializable {
     }
 
     public Order() {
-
+	
     }
 
     public Order(HttpServletRequest request) {
-	int classId = Integer.parseInt(request.getParameter("room_class_id"));
+	int classId = Integer.parseInt(request.getParameter(ROOM_CLASS_ID.v));
 	roomClass = RoomClass.fromInt(classId);
 	details = new OrderDetails(request);
 	status = OrderStatus.NEW;

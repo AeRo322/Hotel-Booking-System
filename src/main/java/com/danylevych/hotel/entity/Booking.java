@@ -7,7 +7,6 @@ import static com.danylevych.hotel.entity.Booking.Column.STATUS_ID;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.ParseException;
 import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
@@ -23,28 +22,33 @@ public class Booking implements Serializable {
 
     public enum Column {
 
-	ID,
-	STATUS_ID,
 	DETAILS_ID,
+	STATUS_ID,
+
+	ID,
 	CREATE_TIME;
 
 	public final String v = name().toLowerCase();
 
     }
 
+    public Booking() {
+
+    }
+
     public Booking(ResultSet resultSet) {
 	try {
-	    setStatus(BookingStatus.fromInt(resultSet.getInt(STATUS_ID.v)));
+	    status = BookingStatus.fromInt(resultSet.getInt(STATUS_ID.v));
 	    createTime = resultSet.getTimestamp(CREATE_TIME.v);
-	    setId(resultSet.getLong(ID.v));
+	    id = resultSet.getLong(ID.v);
 
-	    setDetails(new OrderDetails(resultSet));
+	    details = new OrderDetails(resultSet);
 	} catch (SQLException e) {
 	    throw new IllegalStateException(e);
 	}
     }
 
-    public Booking(HttpServletRequest request) throws ParseException {
+    public Booking(HttpServletRequest request) {
 	details = new OrderDetails(request);
 	status = BookingStatus.UNPAID;
     }

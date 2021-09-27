@@ -17,25 +17,25 @@ public class Room implements Serializable {
 
     private RoomStatus roomStatus;
     private RoomClass roomClass;
-
     private int capacity;
-    private int number;
     private int price;
+
+    private int number;
 
     public enum Column {
 
-	NUMBER,
 	STATUS_ID,
 	CLASS_ID,
 	CAPACITY,
-	PRICE;
+	PRICE,
+
+	NUMBER;
 
 	public final String v = name().toLowerCase();
 
     }
 
     public Room() {
-
     }
 
     public Room(ResultSet resultSet) throws SQLException {

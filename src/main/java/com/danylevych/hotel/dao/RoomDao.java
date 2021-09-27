@@ -5,16 +5,18 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-import com.danylevych.hotel.entity.OrderDetails;
 import com.danylevych.hotel.entity.Room;
+import com.danylevych.hotel.util.SQL;
 
 public abstract class RoomDao extends JdbcDao<Room> {
 
     public static final String TABLE_NAME = "room";
 
     protected RoomDao(DaoFactory daoFactory) {
-	super(daoFactory, TABLE_NAME);
+	super(daoFactory, TABLE_NAME, Room.Column.values(), 4);
     }
+
+    public abstract void update(Connection c, List<Room> details);
 
     @Override
     protected Room mapEntity(ResultSet resultSet) {
@@ -25,10 +27,18 @@ public abstract class RoomDao extends JdbcDao<Room> {
 	}
     }
 
-    public abstract void update(Connection c, Room room);
+    @Override
+    protected String generateSqlFind(int n) {
+	return SQL.generateSqlFind(Room.Column.NUMBER, n, TABLE_NAME);
+    }
 
-    public abstract void update(Connection c, OrderDetails details);
-
-    public abstract List<Room> find(Integer... roomNumbers);
-
+    @Override
+    protected Object[] getValues(Room t) {
+	return new Object[] {
+	    t.getRoomStatus().ordinal(),
+	    t.getRoomClass().ordinal(),
+	    t.getCapacity(),
+	    t.getPrice()
+	};
+    }
 }

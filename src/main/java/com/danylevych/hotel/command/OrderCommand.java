@@ -14,18 +14,15 @@ public class OrderCommand implements Command {
     public String execute(HttpServletRequest request,
             HttpServletResponse response) {
 
+	// TODO
 	User user = Session.getUser(request);
 	if (user == null) {
 	    return request.getContextPath()
 	           + "/auth/login.jsp";
 	}
 
-	try {
-	    DaoFactory.getInstance().getOrderDao().create(new Order(request));
-	} catch (Exception e) {
-	    throw new IllegalArgumentException(e);
-	}
-
+	DaoFactory.getInstance().getOrderDao().create(new Order(request));
+	
 	return request.getHeader("referer");
     }
 

@@ -1,9 +1,9 @@
 package com.danylevych.hotel.entity;
 
-import static com.danylevych.hotel.entity.Order.Column.DETAILS_ID;
 import static com.danylevych.hotel.entity.OrderDetails.Column.CHECK_IN;
 import static com.danylevych.hotel.entity.OrderDetails.Column.CHECK_OUT;
 import static com.danylevych.hotel.entity.OrderDetails.Column.GUESTS;
+import static com.danylevych.hotel.entity.OrderDetails.Column.ID;
 import static com.danylevych.hotel.entity.OrderDetails.Column.USER_ID;
 
 import java.io.Serializable;
@@ -11,35 +11,37 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import com.danylevych.hotel.dao.DaoFactory;
+import com.danylevych.hotel.dao.OrderDetailsDao;
+import com.danylevych.hotel.dao.RoomDao;
+import com.danylevych.hotel.util.Session;
 
 public class OrderDetails implements Serializable {
 
     private static final long serialVersionUID = -5358042958363538412L;
 
-    private Long id;
-    private int userId;
     private int guests;
-
+    private long userId;
     private Date checkIn;
     private Date checkOut;
 
+    private Long id;
     private List<Room> rooms;
 
     public enum Column {
 
-	ID,
-	GUESTS,
 	USER_ID,
+	GUESTS,
 	CHECK_IN,
-	CHECK_OUT;
+	CHECK_OUT,
+
+	ID;
 
 	public final String v = name().toLowerCase();
 
@@ -52,15 +54,10 @@ public class OrderDetails implements Serializable {
     public OrderDetails(HttpServletRequest request) {
 	try {
 	    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-
-	    checkIn = format.parse(request.getParameter("check_in"));
-	    checkOut = format.parse(request.getParameter("check_out"));
-
-	    guests = Integer.parseInt(request.getParameter("guests"));
-
-	    HttpSession session = request.getSession();
-	    User user = (User) session.getAttribute("user");
-	    userId = user.getId();
+	    checkIn = format.parse(request.getParameter(CHECK_IN.v));
+	    checkOut = format.parse(request.getParameter(CHECK_OUT.v));
+	    guests = Integer.parseInt(request.getParameter(GUESTS.v));
+	    userId = Session.getUser(request).getId();
 	} catch (ParseException e) {
 	    throw new IllegalStateException(e);
 	}
@@ -72,15 +69,14 @@ public class OrderDetails implements Serializable {
 	    userId = resultSet.getInt(USER_ID.v);
 	    checkIn = resultSet.getDate(CHECK_IN.v);
 	    checkOut = resultSet.getDate(CHECK_OUT.v);
-	    id = resultSet.getLong(DETAILS_ID.v);
+	    id = resultSet.getLong(ID.v);
 
 	    DaoFactory instance = DaoFactory.getInstance();
-	    List<Integer> roomNumbers =
-	            instance.getOrderDetailsDao().getRoomNumbers(id);
-
-	    rooms = instance.getRoomDao()
-	                    .find(roomNumbers.toArray(
-	                            new Integer[roomNumbers.size()]));
+	    OrderDetailsDao orderDetailsDao = instance.getOrderDetailsDao();
+	    List<Integer> roomNumbers = orderDetailsDao.getRoomNumbers(id);
+	    RoomDao roomDao = instance.getRoomDao();
+	    rooms = roomNumbers.isEmpty() ? null
+	                                  : roomDao.find(roomNumbers.toArray());
 	} catch (SQLException e) {
 	    throw new IllegalStateException(e);
 	}
@@ -88,15 +84,14 @@ public class OrderDetails implements Serializable {
 
     public OrderDetails(User user, Room room) {
 	userId = user.getId();
-	rooms = new ArrayList<>();
-	rooms.add(room);
+	rooms = Arrays.asList(room);
     }
 
-    public int getUserId() {
+    public long getUserId() {
 	return userId;
     }
 
-    public void setUserId(int userId) {
+    public void setUserId(long userId) {
 	this.userId = userId;
     }
 

@@ -19,9 +19,7 @@ public class AnswerCommand implements Command {
 	                                                + "ed").toUpperCase());
 
 	final long id = Long.parseLong(request.getParameter("id"));
-
-	DaoFactory daoFactory = DaoFactory.getInstance(DaoFactory.MY_SQL);
-	OrderDao orderDao = daoFactory.getOrderDao();
+	OrderDao orderDao = DaoFactory.getInstance().getOrderDao();
 	Order order = orderDao.find(id);
 	order.setStatus(status);
 	orderDao.update(order);

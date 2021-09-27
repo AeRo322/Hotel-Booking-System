@@ -16,7 +16,7 @@ public class User implements Serializable {
 
     private static final long serialVersionUID = 7225500122023129085L;
 
-    private int id;
+    private long id;
     private UserRole role;
 
     private String firstName;
@@ -41,6 +41,9 @@ public class User implements Serializable {
 
     }
 
+    public User() {
+    }
+    
     public User(ResultSet resultSet) throws SQLException {
 	role = UserRole.fromInt(resultSet.getInt(ROLE_ID.v));
 	createTime = resultSet.getDate(CREATE_TIME.v);
@@ -54,11 +57,11 @@ public class User implements Serializable {
 	return String.format("%s %s", firstName, lastName);
     }
 
-    public int getId() {
+    public long getId() {
 	return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
 	this.id = id;
     }
 

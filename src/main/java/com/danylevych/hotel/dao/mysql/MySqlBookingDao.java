@@ -23,19 +23,9 @@ public class MySqlBookingDao extends BookingDao {
 
     @Override
     public void create(Booking booking) {
-	String sql = "INSERT INTO booking"
-	             + " (details_id, status_id)"
-	             + " VALUES(?, ?)";
-
 	transaction(c -> {
-	    OrderDetails orderDetails = booking.getDetails();
-	    OrderDetailsDao orderDetailsDao = daoFactory.getOrderDetailsDao();
-	    orderDetailsDao.update(c, orderDetails);
-
-	    RoomDao roomDao = daoFactory.getRoomDao();
-	    roomDao.update(c, booking.getDetails());
-
-	    create(c, sql, orderDetails.getId(), booking.getStatus().ordinal());
+	    daoFactory.getOrderDetailsDao().update(c, booking.getDetails());
+	    create(c, booking);
 	});
     }
 
@@ -44,30 +34,17 @@ public class MySqlBookingDao extends BookingDao {
             boolean isAscending, Object... values) {
 	String sql = "SELECT *"
 	             + " FROM booking"
+	             + " JOIN order_details"
+	             + " ON order_details.id = details_id"
+	             + " WHERE user_id = ?"
 	             + " ORDER BY %s %s"
 	             + " LIMIT ? OFFSET ?";
 
 	sql = String.format(sql, orderBy, isAscending ? "ASC" : "DESC");
 
-	return list(sql, limit, offset);
-    }
+	Long userId = (Long) values[0];
 
-    @Override
-    public Booking find(Long bookingId) {
-	final String sql = "SELECT *"
-	                   + " FROM booking"
-	                   + " WHERE id = ?";
-
-	return find(sql, bookingId);
-    }
-
-    @Override
-    public void update(Booking booking) {
-	final String sql = "UPDATE booking"
-	                   + " SET"
-	                   + " status_id = ?";
-
-	update(sql, booking.getStatus().ordinal());
+	return list(sql, userId, limit, offset);
     }
 
     @Override
@@ -94,8 +71,11 @@ public class MySqlBookingDao extends BookingDao {
 	    update(c, sql, expiredBookings);
 
 	    for (Booking booking : expiredBookings) {
+		final long orderDetailsId = booking.getDetails().getId();
+		OrderDetailsDao orderDetailsDao =
+		        daoFactory.getOrderDetailsDao();
 		List<Integer> roomNumbers =
-		        getRoomNumbers(booking.getDetails().getId());
+		        orderDetailsDao.getRoomNumbers(orderDetailsId);
 		List<Room> rooms = new ArrayList<>();
 
 		for (Integer roomNumber : roomNumbers) {
@@ -108,7 +88,8 @@ public class MySqlBookingDao extends BookingDao {
 		OrderDetails details = booking.getDetails();
 		details.setRooms(rooms);
 		booking.setDetails(details);
-		daoFactory.getRoomDao().update(c, booking.getDetails());
+		RoomDao roomDao = daoFactory.getRoomDao();
+		roomDao.update(c, booking.getDetails().getRooms());
 	    }
 	});
     }

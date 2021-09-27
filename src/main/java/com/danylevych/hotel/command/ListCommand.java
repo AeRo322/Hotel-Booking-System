@@ -30,7 +30,8 @@ public class ListCommand implements Command {
 
 	DaoFactory daoFactory = DaoFactory.getInstance(DaoFactory.MY_SQL);
 	String entity = request.getParameter("entity");
-	Object value = null;
+	User user = Session.getUser(request);
+	Object value = user.getId();
 	JdbcDao<?> dao;
 	String url;
 
@@ -46,8 +47,7 @@ public class ListCommand implements Command {
 	    break;
 
 	case CartDao.TABLE_NAME:
-	    User user = Session.getUser(request);
-	    value = user.getCart().getOrderDetails();
+	    value = daoFactory.getCartDao().find(user.getId());
 	    dao = daoFactory.getCartDao();
 	    url = "/WEB-INF/menu/cart.jsp";
 	    break;
@@ -63,9 +63,7 @@ public class ListCommand implements Command {
 	}
 
 	int page;
-
-	String requestedSortField = request.getParameter("orderBy");
-
+	final String requestedSortField = request.getParameter("orderBy");
 	if (Validator.validateSortField(entity, requestedSortField)) {
 	    if (requestedSortField.equals(orderBy)) {
 		isAscending = !isAscending;
@@ -79,7 +77,7 @@ public class ListCommand implements Command {
 	}
 
 	final int offset = (page - 1) * limit;
-	
+
 	List<?> list = dao.list(limit, offset, orderBy, isAscending, value);
 	final int nRows = dao.count();
 

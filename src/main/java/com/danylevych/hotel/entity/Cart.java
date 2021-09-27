@@ -1,5 +1,8 @@
 package com.danylevych.hotel.entity;
 
+import static com.danylevych.hotel.entity.Cart.Column.LAST_UPDATE;
+import static com.danylevych.hotel.entity.Cart.Column.USER_ID;
+
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,11 +16,22 @@ public class Cart implements Serializable {
     private OrderDetails orderDetails;
     private Date lastUpdate;
 
+    public enum Column {
+
+	USER_ID,
+	ORDER_DETAILS_ID,
+
+	LAST_UPDATE;
+
+	public final String v = name().toLowerCase();
+
+    }
+
     public Cart(ResultSet resultSet) {
 	try {
-	    userId = resultSet.getLong("user_id");
+	    userId = resultSet.getLong(USER_ID.v);
 	    orderDetails = new OrderDetails(resultSet);
-	    lastUpdate = resultSet.getTimestamp("last_update");
+	    lastUpdate = resultSet.getTimestamp(LAST_UPDATE.v);
 	} catch (SQLException e) {
 	    throw new IllegalStateException(e);
 	}
@@ -36,20 +50,20 @@ public class Cart implements Serializable {
 	this.userId = userId;
     }
 
-    public OrderDetails getOrderDetails() {
-	return orderDetails;
-    }
-
-    public void setOrderDetails(OrderDetails orderDetails) {
-	this.orderDetails = orderDetails;
-    }
-
     public Date getLastUpdate() {
 	return lastUpdate;
     }
 
     public void setLastUpdate(Date lastUpdate) {
 	this.lastUpdate = lastUpdate;
+    }
+
+    public OrderDetails getOrderDetails() {
+	return orderDetails;
+    }
+
+    public void setOrderDetails(OrderDetails orderDetails) {
+	this.orderDetails = orderDetails;
     }
 
 }

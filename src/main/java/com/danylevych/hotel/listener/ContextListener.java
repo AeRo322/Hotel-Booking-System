@@ -46,7 +46,7 @@ public class ContextListener implements ServletContextListener {
 	Loggers.log("Homepage: "
 	            + homepage);
 
-	new PaymentTracker().start();
+	//new PaymentTracker().start();
     }
 
 }

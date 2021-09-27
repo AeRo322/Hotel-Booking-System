@@ -9,18 +9,20 @@ public abstract class OrderDao extends JdbcDao<Order> {
     public static final String TABLE_NAME = "order";
 
     protected OrderDao(DaoFactory daoFactory) {
-	super(daoFactory, TABLE_NAME);
+	super(daoFactory, TABLE_NAME, Order.Column.values(), 3);
     }
-
-    public abstract void create(Order order);
-
-    public abstract void update(Order order);
-
-    public abstract Order find(long id);
 
     @Override
     protected Order mapEntity(ResultSet resultSet) {
 	return new Order(resultSet);
     }
 
+    @Override
+    protected Object[] getValues(Order t) {
+	return new Object[] {
+	    t.getRoomClass().ordinal(),
+	    t.getDetails().getId(),
+	    t.getStatus().ordinal()
+	};
+    }
 }
