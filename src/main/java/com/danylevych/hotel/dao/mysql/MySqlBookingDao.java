@@ -51,11 +51,12 @@ public class MySqlBookingDao extends BookingDao {
 	                 + " FROM booking"
 	                 + " JOIN order_details"
 	                 + " ON order_details.id = details_id"
-	                 + " WHERE status_id = 4"
+	                 + " WHERE status_id = %d"
 	                 + " ORDER BY %s %s"
 	                 + " LIMIT ? OFFSET ?";
 
-	    sql = String.format(sql, orderBy, isAscending ? "ASC" : "DESC");
+	    sql = String.format(sql, BookingStatus.IN_USE.ordinal(), orderBy,
+	            isAscending ? "ASC" : "DESC");
 
 	    return list(sql, limit, offset);
 	} else {
@@ -79,7 +80,9 @@ public class MySqlBookingDao extends BookingDao {
 	if (user.getRole() == UserRole.MANAGER) {
 	    String sql = "SELECT COUNT(*)"
 	                 + " FROM booking"
-	                 + " WHERE status_id = 4";
+	                 + " WHERE status_id = %d";
+
+	    sql = String.format(sql, BookingStatus.IN_USE.ordinal());
 
 	    return count(sql);
 	}
@@ -91,11 +94,11 @@ public class MySqlBookingDao extends BookingDao {
 	String sql = "UPDATE booking"
 	             + " SET status_id = %d"
 	             + " WHERE status_id = %d"
-	             + " AND create_time < NOW() - INTERVAL 5 SECOND";
+	             + " AND create_time < NOW() - INTERVAL 2 DAY";
 
 	sql = String.format(sql, BookingStatus.EXPIRED.ordinal(),
 	        BookingStatus.UNPAID.ordinal());
-	
+
 	update(sql);
     }
 }

@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.danylevych.hotel.entity.User;
+import com.danylevych.hotel.util.Session;
 
 @WebFilter("/user/*")
 public class AuthorizationFilter implements Filter {
@@ -23,10 +24,11 @@ public class AuthorizationFilter implements Filter {
 	HttpServletResponse httpResponse = (HttpServletResponse) response;
 	HttpServletRequest httpRequest = (HttpServletRequest) request;
 
-	User user = (User) httpRequest.getSession().getAttribute("user");
+	User user = Session.getUser(httpRequest);
 
 	if (user == null) {
-	    String loginURL = httpRequest.getContextPath() + "/auth/login.jsp";
+	    String loginURL = httpRequest.getContextPath()
+	                      + "/auth/login.jsp";
 	    httpResponse.sendRedirect(loginURL);
 	    return;
 	}
