@@ -34,8 +34,11 @@ public class MySqlCartDao extends CartDao {
 
     @Override
     public void deleteExpiredCarts() {
-	final String sql = "DELETE FROM cart"
-	                   + " WHERE last_update > NOW() + INTERVAL 30 MINUTE";
+	final String sql = "DELETE order_details"
+	                   + " FROM order_details"
+	                   + " JOIN cart "
+	                   + " ON order_details_id = id"
+	                   + " WHERE last_update < NOW() - INTERVAL 10 SECOND";
 
 	update(sql);
     }

@@ -24,11 +24,10 @@ public final class PaymentTracker extends Thread {
 	    try {
 		cartDao.deleteExpiredCarts();
 		bookingDao.closeExpiredBookings();
-		Thread.sleep(Duration.ofSeconds(60).toMillis());
+		Thread.sleep(Duration.ofSeconds(5).toMillis());
 	    } catch (InterruptedException e) {
 		logger.catching(e);
 		currentThread().interrupt();
-		break;
 	    }
 	}
     }
