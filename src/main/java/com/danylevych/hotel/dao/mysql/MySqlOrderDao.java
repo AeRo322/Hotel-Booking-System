@@ -67,7 +67,19 @@ public class MySqlOrderDao extends OrderDao {
 
 	    return list(sql, user.getId(), limit, offset);
 	}
-
     }
 
+    @Override
+    public int count(Object... values) {
+	User user = daoFactory.getUserDao().find((long) values[0]);
+	if (user.getRole() == UserRole.MANAGER) {
+	    String sql = "SELECT COUNT(*)"
+	                 + " FROM `order`"
+	                 + " WHERE status_id"
+	                 + " IN (SELECT id FROM order_status WHERE name = 'NEW')";
+
+	    return count(sql);
+	}
+	return super.count(values);
+    }
 }

@@ -25,7 +25,7 @@ public class MySqlRoomDao extends RoomDao {
     @Override
     public List<Room> list(int limit, int offset, String orderBy,
             boolean isAscending, User user) {
-	if (user.getRole() == UserRole.MANAGER) {
+	if (user != null && user.getRole() == UserRole.MANAGER) {
 	    final String sql = "SELECT *"
 	                       + " FROM room"
 	                       + " WHERE status_id = 0";
@@ -43,4 +43,11 @@ public class MySqlRoomDao extends RoomDao {
 	}
     }
 
+    @Override
+    public int count(Object... values) {
+	final String sql = "SELECT COUNT(*)"
+	                   + " FROM room";
+
+	return count(sql);
+    }
 }

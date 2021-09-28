@@ -5,7 +5,8 @@ public enum BookingStatus {
     PAID,
     UNPAID,
     EXPIRED,
-    COMPLETED;
+    COMPLETED,
+    IN_USE;
     
     private static final BookingStatus[] VALUES = values();
 

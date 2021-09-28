@@ -38,7 +38,7 @@ public class AnswerCommand implements Command {
 	    OrderDetails orderDetails = order.getDetails();
 	    orderDetails.setRooms(Arrays.asList(room));
 	    order.setDetails(orderDetails);
-	    
+
 	    order.setStatus(OrderStatus.PENDING);
 	    orderDao.update(order);
 	    break;
@@ -47,7 +47,7 @@ public class AnswerCommand implements Command {
 	    order.setStatus(OrderStatus.DECLINED);
 	    orderDao.update(order);
 	    break;
-	    
+
 	case "cancel":
 	    order.setStatus(OrderStatus.CANCELED);
 	    orderDao.update(order);
@@ -55,7 +55,7 @@ public class AnswerCommand implements Command {
 
 	case "accept":
 	    order.setStatus(OrderStatus.ACCEPTED);
-	    daoFactory.getBookingDao().create(new Booking(order));
+	    daoFactory.getBookingDao().create(new Booking(order), order);
 	    break;
 
 	default:

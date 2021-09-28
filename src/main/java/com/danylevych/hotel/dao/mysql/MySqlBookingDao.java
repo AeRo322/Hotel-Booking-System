@@ -16,11 +16,20 @@ import com.danylevych.hotel.entity.OrderDetails;
 import com.danylevych.hotel.entity.Room;
 import com.danylevych.hotel.entity.RoomStatus;
 import com.danylevych.hotel.entity.User;
+import com.danylevych.hotel.entity.UserRole;
 
 public class MySqlBookingDao extends BookingDao {
 
     public MySqlBookingDao(DaoFactory daoFactory) {
 	super(daoFactory);
+    }
+
+    @Override
+    public void update(Booking booking, Room room) {
+	transaction(c -> {
+	    daoFactory.getRoomDao().update(c, room);
+	    update(c, booking);
+	});
     }
 
     @Override
@@ -31,7 +40,7 @@ public class MySqlBookingDao extends BookingDao {
 	    create(c, booking);
 	});
     }
-    
+
     @Override
     public void create(Booking booking, Order order) {
 	transaction(c -> {
@@ -43,19 +52,46 @@ public class MySqlBookingDao extends BookingDao {
     @Override
     public List<Booking> list(int limit, int offset, String orderBy,
             boolean isAscending, User user) {
-	String sql = "SELECT *"
-	             + " FROM booking"
-	             + " JOIN order_details"
-	             + " ON order_details.id = details_id"
-	             + " WHERE user_id = ?"
-	             + " ORDER BY %s %s"
-	             + " LIMIT ? OFFSET ?";
+	if (user.getRole() == UserRole.MANAGER) {
+	    String sql = "SELECT *"
+	                 + " FROM booking"
+	                 + " JOIN order_details"
+	                 + " ON order_details.id = details_id"
+	                 + " WHERE status_id = 4"
+	                 + " ORDER BY %s %s"
+	                 + " LIMIT ? OFFSET ?";
 
-	sql = String.format(sql, orderBy, isAscending ? "ASC" : "DESC");
+	    sql = String.format(sql, orderBy, isAscending ? "ASC" : "DESC");
 
-	return list(sql, user.getId(), limit, offset);
+	    return list(sql, limit, offset);
+	} else {
+	    String sql = "SELECT *"
+	                 + " FROM booking"
+	                 + " JOIN order_details"
+	                 + " ON order_details.id = details_id"
+	                 + " WHERE user_id = ?"
+	                 + " ORDER BY %s %s"
+	                 + " LIMIT ? OFFSET ?";
+
+	    sql = String.format(sql, orderBy, isAscending ? "ASC" : "DESC");
+
+	    return list(sql, user.getId(), limit, offset);
+	}
     }
 
+    @Override
+    public int count(Object... values) {
+	User user = daoFactory.getUserDao().find((long) values[0]);
+	if (user.getRole() == UserRole.MANAGER) {
+	    String sql = "SELECT COUNT(*)"
+	                 + " FROM booking"
+	                 + " WHERE status_id = 4";
+
+	    return count(sql);
+	}
+	return super.count(values);
+    }
+    
     @Override
     public void closeExpiredBookings() {
 	transaction(c -> {

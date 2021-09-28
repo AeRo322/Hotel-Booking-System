@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import com.danylevych.hotel.entity.User;
+import com.danylevych.hotel.util.SQL;
 
 public abstract class UserDao extends JdbcDao<User> {
 
@@ -33,7 +34,7 @@ public abstract class UserDao extends JdbcDao<User> {
 
     @Override
     protected String generateSqlFind(int n) {
-	throw new UnsupportedOperationException();
+	return SQL.generateSqlFind(User.Column.ID, n, TABLE_NAME);
     }
 
     @Override

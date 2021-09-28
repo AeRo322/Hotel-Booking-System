@@ -80,8 +80,15 @@ public class ListCommand implements Command {
 
 	final int offset = (page - 1) * limit;
 
+	if (user != null && user.getRole() == UserRole.MANAGER) {
+	    RoomDao roomDao = daoFactory.getRoomDao();
+	    List<Room> rooms =
+	            roomDao.list(limit, offset, orderBy, isAscending, user);
+	    request.getSession().setAttribute("rooms", rooms);
+	}
+
 	List<?> list = dao.list(limit, offset, orderBy, isAscending, user);
-	final int nRows = dao.count();
+	final int nRows = dao.count(user == null ? null : user.getId());
 
 	final int x = nRows / limit;
 	final int nPages = x + ((nRows % limit != 0) ? 1 : 0);
@@ -95,13 +102,6 @@ public class ListCommand implements Command {
 	int[] pages = new int[nPageLinks];
 	for (int j = 0; j < pages.length; j++) {
 	    pages[j] = ++firstPage;
-	}
-
-	if (user.getRole() == UserRole.MANAGER) {
-	    RoomDao roomDao = daoFactory.getRoomDao();
-	    List<Room> rooms =
-	            roomDao.list(limit, offset, orderBy, isAscending, user);
-	    request.getSession().setAttribute("rooms", rooms);
 	}
 
 	request.setAttribute("list", list);

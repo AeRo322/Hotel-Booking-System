@@ -71,7 +71,7 @@ public class MySqlCartDao extends CartDao {
     }
 
     @Override
-    public int count() {
+    public int count(Object... values) {
 	return size;
     }
 

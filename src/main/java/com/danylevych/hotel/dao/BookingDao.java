@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 
 import com.danylevych.hotel.entity.Booking;
 import com.danylevych.hotel.entity.Order;
+import com.danylevych.hotel.entity.Room;
 import com.danylevych.hotel.util.SQL;
 
 public abstract class BookingDao extends JdbcDao<Booking> {
@@ -42,5 +43,7 @@ public abstract class BookingDao extends JdbcDao<Booking> {
     protected Object getWhereValue(Booking t) {
 	return t.getId();
     }
+
+    public abstract void update(Booking booking, Room room);
 
 }

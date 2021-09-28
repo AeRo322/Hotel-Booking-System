@@ -55,6 +55,20 @@ public abstract class JdbcDao<T> {
 	return SQL.generateSqlInsert(columns, n, table);
     }
 
+    public List<T> find(Object... ids) {
+	return list(generateSqlFind(ids.length), ids);
+    }
+
+    public T find(long id) {
+	List<T> list = list(generateSqlFind(1), id);
+	return list.isEmpty() ? null : list.get(0);
+    }
+
+    protected T find(String sql, Object... values) {
+	List<T> list = list(sql, values);
+	return list.isEmpty() ? null : list.get(0);
+    }
+
     public abstract List<T> list(int limit, int offset, String orderBy,
             boolean isAscending, User user);
 
@@ -75,28 +89,13 @@ public abstract class JdbcDao<T> {
 	return list;
     }
 
-    public List<T> find(Object... ids) {
-	return list(generateSqlFind(ids.length), ids);
+    public int count(Object... values) {
+	return count(generateSqlFind(1), values);
     }
-
-    public T find(long id) {
-	List<T> list = list(generateSqlFind(1), id);
-	return list.isEmpty() ? null : list.get(0);
-    }
-
-    protected T find(String sql, Object... values) {
-	List<T> list = list(sql, values);
-	return list.isEmpty() ? null : list.get(0);
-    }
-
-    public int count() {
-	String sql = "SELECT COUNT(*)"
-	             + " FROM `%s`";
-
-	sql = String.format(sql, table);
-
+    
+    protected int count(String sql, Object... values) {
 	try (Connection c = getConnection();
-	     PreparedStatement s = prepareStatement(c, sql);
+	     PreparedStatement s = prepareStatement(c, sql, values);
 	     ResultSet resultSet = s.executeQuery()) {
 
 	    if (!resultSet.next()) {

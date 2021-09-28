@@ -17,7 +17,12 @@ public final class SQL {
 
     public static String generateSqlFind(Object column, int n,
             String... tables) {
-	final String sql = "SELECT *"
+	return generateSqlFind(column, "*", n, tables);
+    }
+
+    public static String generateSqlFind(Object column, String aggregate, int n,
+            String... tables) {
+	final String sql = "SELECT %s"
 	                   + " FROM %s"
 	                   + " WHERE %s IN (%s)";
 
@@ -33,7 +38,7 @@ public final class SQL {
 	}
 	fromClause.deleteCharAt(fromClause.length() - 1);
 
-	return String.format(sql, fromClause, column, placeholders);
+	return String.format(sql, aggregate, fromClause, column, placeholders);
     }
 
     public static String generateSqlUpdate(Object[] columns, int n,
@@ -41,14 +46,14 @@ public final class SQL {
 	final String sql = "UPDATE `%s`"
 	                   + " SET %s"
 	                   + " WHERE %s";
-	
-	final String whereClause = String.format("%s=?", columns[n]);	
+
+	final String whereClause = String.format("%s=?", columns[n]);
 	StringBuilder s = new StringBuilder();
 	for (int i = 0; i < n; i++) {
 	    s.append(columns[i]).append("=?,");
 	}
 	s.deleteCharAt(s.length() - 1);
-	
+
 	return String.format(sql, table, s, whereClause);
     }
 
