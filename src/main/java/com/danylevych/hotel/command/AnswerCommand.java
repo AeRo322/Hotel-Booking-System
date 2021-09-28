@@ -37,10 +37,9 @@ public class AnswerCommand implements Command {
 
 	    OrderDetails orderDetails = order.getDetails();
 	    orderDetails.setRooms(Arrays.asList(room));
-	    order.setDetails(orderDetails);
 
 	    order.setStatus(OrderStatus.PENDING);
-	    orderDao.update(order);
+	    orderDao.update(order, orderDetails);
 	    break;
 
 	case "decline":

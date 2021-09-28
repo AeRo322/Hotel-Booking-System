@@ -3,6 +3,7 @@ package com.danylevych.hotel.dao;
 import java.sql.ResultSet;
 
 import com.danylevych.hotel.entity.Order;
+import com.danylevych.hotel.entity.OrderDetails;
 import com.danylevych.hotel.util.SQL;
 
 public abstract class OrderDao extends JdbcDao<Order> {
@@ -12,6 +13,8 @@ public abstract class OrderDao extends JdbcDao<Order> {
     protected OrderDao(DaoFactory daoFactory) {
 	super(daoFactory, TABLE_NAME, Order.Column.values(), 3);
     }
+
+    public abstract void update(Order order, OrderDetails orderDetails);
 
     @Override
     protected Order mapEntity(ResultSet resultSet) {
@@ -39,4 +42,5 @@ public abstract class OrderDao extends JdbcDao<Order> {
     protected Object getWhereValue(Order t) {
 	return t.getId();
     }
+
 }

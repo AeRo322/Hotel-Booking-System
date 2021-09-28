@@ -17,9 +17,8 @@ public class MySqlOrderDao extends OrderDao {
     }
 
     @Override
-    public void update(Order order) {
+    public void update(Order order, OrderDetails orderDetails) {
 	transaction(c -> {
-	    OrderDetails orderDetails = order.getDetails();
 	    if (orderDetails.getRooms() != null) {
 		daoFactory.getOrderDetailsDao().addRoomToOrder(c, orderDetails);
 	    }
@@ -82,4 +81,5 @@ public class MySqlOrderDao extends OrderDao {
 	}
 	return super.count(values);
     }
+
 }
