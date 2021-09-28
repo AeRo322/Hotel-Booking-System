@@ -6,6 +6,7 @@ import java.util.List;
 import com.danylevych.hotel.dao.DaoFactory;
 import com.danylevych.hotel.dao.RoomDao;
 import com.danylevych.hotel.entity.Room;
+import com.danylevych.hotel.entity.RoomStatus;
 import com.danylevych.hotel.entity.User;
 import com.danylevych.hotel.entity.UserRole;
 
@@ -26,9 +27,11 @@ public class MySqlRoomDao extends RoomDao {
     public List<Room> list(int limit, int offset, String orderBy,
             boolean isAscending, User user) {
 	if (user != null && user.getRole() == UserRole.MANAGER) {
-	    final String sql = "SELECT *"
-	                       + " FROM room"
-	                       + " WHERE status_id = 0";
+	    String sql = "SELECT *"
+	                 + " FROM room"
+	                 + " WHERE status_id = %d";
+
+	    sql = String.format(sql, RoomStatus.AVAILABLE.ordinal());
 
 	    return list(sql);
 	} else {

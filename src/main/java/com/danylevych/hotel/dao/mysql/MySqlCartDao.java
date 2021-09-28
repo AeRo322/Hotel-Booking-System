@@ -58,6 +58,7 @@ public class MySqlCartDao extends CartDao {
 
 	Cart cart = user.getCart();
 	if (cart == null) {
+	    size = 0;
 	    return Collections.emptyList();
 	}
 

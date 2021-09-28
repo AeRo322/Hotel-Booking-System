@@ -15,9 +15,15 @@ public abstract class BookingDao extends JdbcDao<Booking> {
 	super(daoFactory, TABLE_NAME, Booking.Column.values(), 2);
     }
 
+    public abstract void updateBookings();
+
+    public abstract void closeCompletedBookings();
+
     public abstract void closeExpiredBookings();
 
     public abstract void create(Booking booking, Order order);
+
+    public abstract void update(Booking booking, Room room);
 
     @Override
     protected String generateSqlFind(int n) {
@@ -43,7 +49,5 @@ public abstract class BookingDao extends JdbcDao<Booking> {
     protected Object getWhereValue(Booking t) {
 	return t.getId();
     }
-
-    public abstract void update(Booking booking, Room room);
 
 }

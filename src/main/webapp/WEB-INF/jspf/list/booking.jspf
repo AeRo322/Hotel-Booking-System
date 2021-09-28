@@ -62,23 +62,12 @@
           <fmt:message key="booking.status.${booking.status}" />
         </td>
         <td>
-          <c:choose>
-            <c:when test="${sessionScope.user.role == UserRole.MANAGER}">
-              <tags:post outline="success" isDisabled="false"
-                name="booking.occupy"
-                params="action=book&booking_id=${booking.id}&v=occupy" />
-            </c:when>
-            <c:otherwise>
-              <c:if test="${booking.status == BookingStatus.UNPAID}">
-                <tags:post outline="success" isDisabled="false"
-                  name="booking.pay"
-                  params="action=book&booking_id=${booking.id}&v=pay" />
-                <tags:post outline="danger" isDisabled="false"
-                  name="booking.cancel"
-                  params="action=book&booking_id=${booking.id}&v=cancel" />
-              </c:if>
-            </c:otherwise>
-          </c:choose>
+          <c:if test="${booking.status == BookingStatus.UNPAID}">
+            <tags:post outline="success" isDisabled="false" name="booking.pay"
+              params="action=book&booking_id=${booking.id}&v=pay" />
+            <tags:post outline="danger" isDisabled="false" name="booking.cancel"
+              params="action=book&booking_id=${booking.id}&v=cancel" />
+          </c:if>
         </td>
       </tr>
     </c:forEach>
