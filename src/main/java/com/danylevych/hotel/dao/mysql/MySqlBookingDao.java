@@ -103,14 +103,11 @@ public class MySqlBookingDao extends BookingDao {
 	             + " JOIN order_details"
 	             + " ON order_details.id = details_id"
 	             + " SET status_id = %d"
-	             + " WHERE (status_id = %d"
-	             + " OR status_id = %d)"
+	             + " WHERE (status_id = %d OR status_id = %d)"
 	             + " AND check_out <= CURDATE()";
 
-	sql = String.format(sql, 
-		BookingStatus.COMPLETED.ordinal(),
-	        BookingStatus.IN_USE.ordinal(), 
-	        BookingStatus.PAID.ordinal());
+	sql = String.format(sql, BookingStatus.COMPLETED.ordinal(),
+	        BookingStatus.IN_USE.ordinal(), BookingStatus.PAID.ordinal());
 
 	update(sql);
     }

@@ -7,12 +7,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.danylevych.hotel.dao.BookingDao;
 import com.danylevych.hotel.dao.DaoFactory;
-import com.danylevych.hotel.dao.RoomDao;
 import com.danylevych.hotel.entity.Booking;
 import com.danylevych.hotel.entity.BookingStatus;
 import com.danylevych.hotel.entity.Cart;
-import com.danylevych.hotel.entity.Room;
-import com.danylevych.hotel.entity.RoomStatus;
 import com.danylevych.hotel.entity.User;
 import com.danylevych.hotel.util.Session;
 
@@ -54,15 +51,6 @@ public class BookCommand implements Command {
 	case "cancel":
 	    booking.setStatus(BookingStatus.COMPLETED);
 	    bookingDao.update(booking);
-	    break;
-
-	case "occupy":
-	    RoomDao roomDao = daoFactory.getRoomDao();
-	    int roomNumber = booking.getDetails().getRooms().get(0).getNumber();
-	    Room room = roomDao.find(roomNumber);
-	    room.setRoomStatus(RoomStatus.OCCUPIED);
-	    booking.setStatus(BookingStatus.IN_USE);
-	    bookingDao.update(booking, room);
 	    break;
 
 	default:

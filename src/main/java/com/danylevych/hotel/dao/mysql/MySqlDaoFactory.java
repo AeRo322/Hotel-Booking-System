@@ -18,6 +18,7 @@ import com.danylevych.hotel.dao.UserDao;
 
 public class MySqlDaoFactory extends DaoFactory {
 
+    
     private OrderDetailsDao orderDetailsDao = new MySqlOrderDetailsDao(this);
     private BookingDao bookingDao = new MySqlBookingDao(this);
     private OrderDao orderDao = new MySqlOrderDao(this);
@@ -25,13 +26,25 @@ public class MySqlDaoFactory extends DaoFactory {
     private RoomDao roomDao = new MySqlRoomDao(this);
     private UserDao userDao = new MySqlUserDao(this);
 
-    private static final DataSource dataSource;
+    private static final String DEFAULT_DB = "jdbc/hotelDB";
+    
+    private final DataSource dataSource;
 
-    static {
+    public MySqlDaoFactory() {
 	try {
 	    Context initContext = new InitialContext();
 	    Context envContext = (Context) initContext.lookup("java:/comp/env");
-	    dataSource = (DataSource) envContext.lookup("jdbc/hotelDB");
+	    dataSource = (DataSource) envContext.lookup(DEFAULT_DB);
+	} catch (NamingException e) {
+	    throw new IllegalStateException(e);
+	}
+    }
+
+    public MySqlDaoFactory(String jndi) {
+	try {
+	    Context initContext = new InitialContext();
+	    Context envContext = (Context) initContext.lookup("java:/comp/env");
+	    dataSource = (DataSource) envContext.lookup(jndi);
 	} catch (NamingException e) {
 	    throw new IllegalStateException(e);
 	}

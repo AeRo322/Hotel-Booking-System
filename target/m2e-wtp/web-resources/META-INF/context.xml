@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Context>
+
   <Resource
     defaultTransactionIsolation="READ_COMMITTED"
     driverClassName="com.mysql.cj.jdbc.Driver"
@@ -9,4 +10,15 @@
     auth="Container"
     username="root"
     password="root" />
+
+  <Resource
+    defaultTransactionIsolation="READ_COMMITTED"
+    driverClassName="com.mysql.cj.jdbc.Driver"
+    url="jdbc:mysql://localhost/hotelTest"
+    type="javax.sql.DataSource"
+    name="jdbc/testHotelDB"
+    auth="Container"
+    username="root"
+    password="root" />
+
 </Context>
