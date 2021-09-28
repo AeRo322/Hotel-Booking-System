@@ -1,6 +1,7 @@
 package com.danylevych.hotel.entity;
 
 import static com.danylevych.hotel.entity.Cart.Column.LAST_UPDATE;
+import static com.danylevych.hotel.entity.Cart.Column.ORDER_DETAILS_ID;
 import static com.danylevych.hotel.entity.Cart.Column.USER_ID;
 
 import java.io.Serializable;
@@ -30,8 +31,10 @@ public class Cart implements Serializable {
     public Cart(ResultSet resultSet) {
 	try {
 	    userId = resultSet.getLong(USER_ID.v);
-	    orderDetails = new OrderDetails(resultSet);
 	    lastUpdate = resultSet.getTimestamp(LAST_UPDATE.v);
+
+	    final long orderDetailsId = resultSet.getLong(ORDER_DETAILS_ID.v);
+	    orderDetails = new OrderDetails(resultSet, orderDetailsId);
 	} catch (SQLException e) {
 	    throw new IllegalStateException(e);
 	}

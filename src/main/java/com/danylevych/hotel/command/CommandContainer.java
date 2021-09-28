@@ -12,6 +12,7 @@ public final class CommandContainer {
 
     static {
 	COMMANDS.put("setLocale", new SetLocaleCommand());
+	COMMANDS.put("register", new RegisterCommand());
 	COMMANDS.put("signOut", new SignOutCommand());
 	COMMANDS.put("answer", new AnswerCommand());
 	COMMANDS.put("order", new OrderCommand());

@@ -2,9 +2,11 @@ package com.danylevych.hotel.dao;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 
 import com.danylevych.hotel.entity.OrderDetails;
+import com.danylevych.hotel.entity.User;
 import com.danylevych.hotel.util.SQL;
 
 public abstract class OrderDetailsDao extends JdbcDao<OrderDetails> {
@@ -24,13 +26,17 @@ public abstract class OrderDetailsDao extends JdbcDao<OrderDetails> {
 
     @Override
     public List<OrderDetails> list(int limit, int offset, String orderBy,
-            boolean isAscending, Object... values) {
+            boolean isAscending, User user) {
 	throw new UnsupportedOperationException();
     }
 
     @Override
     protected OrderDetails mapEntity(ResultSet resultSet) {
-	return new OrderDetails(resultSet);
+	try {
+	    return new OrderDetails(resultSet);
+	} catch (SQLException e) {
+	    throw new IllegalStateException(e);
+	}
     }
 
     @Override
@@ -46,6 +52,11 @@ public abstract class OrderDetailsDao extends JdbcDao<OrderDetails> {
 	    t.getCheckIn(),
 	    t.getCheckOut()
 	};
+    }
+
+    @Override
+    protected Object getWhereValue(OrderDetails t) {
+	return t.getId();
     }
 
 }

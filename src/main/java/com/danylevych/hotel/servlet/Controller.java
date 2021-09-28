@@ -1,8 +1,5 @@
 package com.danylevych.hotel.servlet;
 
-import java.io.IOException;
-
-import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.annotation.WebServlet;
@@ -26,7 +23,7 @@ public class Controller extends HttpServlet {
 	try {
 	    String url = CommandContainer.execute(request, response);
 	    request.getRequestDispatcher(url).forward(request, response);
-	} catch (IOException | ServletException e) {
+	} catch (Exception e) {
 	    Loggers.log(e);
 	    showErrorPage(request, response);
 	}
@@ -39,7 +36,7 @@ public class Controller extends HttpServlet {
 	try {
 	    String url = CommandContainer.execute(request, response);
 	    response.sendRedirect(url);
-	} catch (IOException e) {
+	} catch (Exception e) {
 	    Loggers.log(e);
 	    showErrorPage(request, response);
 	}
@@ -48,7 +45,7 @@ public class Controller extends HttpServlet {
     void showErrorPage(ServletRequest request, ServletResponse response) {
 	try {
 	    request.getRequestDispatcher(ERROR_JSP).forward(request, response);
-	} catch (ServletException | IOException e) {
+	} catch (Exception e) {
 	    Loggers.log(e);
 	}
     }

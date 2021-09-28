@@ -11,7 +11,7 @@ public abstract class UserDao extends JdbcDao<User> {
     public static final String TABLE_NAME = "user";
 
     protected UserDao(DaoFactory daoFactory) {
-	super(daoFactory, TABLE_NAME, null, 0);
+	super(daoFactory, TABLE_NAME, User.Column.values(), 5);
     }
 
     public abstract User find(String email, String password);
@@ -27,7 +27,7 @@ public abstract class UserDao extends JdbcDao<User> {
 
     @Override
     public List<User> list(int limit, int offset, String orderBy,
-            boolean isAscending, Object... values) {
+            boolean isAscending, User user) {
 	throw new UnsupportedOperationException();
     }
 
@@ -38,6 +38,17 @@ public abstract class UserDao extends JdbcDao<User> {
 
     @Override
     protected Object[] getValues(User t) {
-	throw new UnsupportedOperationException();
+	return new Object[] {
+	    t.getRole().ordinal(),
+	    t.getFirstName(),
+	    t.getLastName(),
+	    t.getEmail(),
+	    t.getPassword()
+	};
+    }
+
+    @Override
+    protected Object getWhereValue(User t) {
+	return t.getId();
     }
 }

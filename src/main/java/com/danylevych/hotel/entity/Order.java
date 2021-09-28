@@ -1,6 +1,7 @@
 package com.danylevych.hotel.entity;
 
 import static com.danylevych.hotel.entity.Order.Column.CREATE_TIME;
+import static com.danylevych.hotel.entity.Order.Column.DETAILS_ID;
 import static com.danylevych.hotel.entity.Order.Column.ID;
 import static com.danylevych.hotel.entity.Order.Column.ROOM_CLASS_ID;
 import static com.danylevych.hotel.entity.Order.Column.STATUS_ID;
@@ -37,7 +38,7 @@ public class Order implements Serializable {
     }
 
     public Order() {
-	
+
     }
 
     public Order(HttpServletRequest request) {
@@ -54,7 +55,8 @@ public class Order implements Serializable {
 	    createTime = resultSet.getTimestamp(CREATE_TIME.v);
 	    id = resultSet.getLong(ID.v);
 
-	    details = new OrderDetails(resultSet);
+	    final long orderDetailsId = resultSet.getLong(DETAILS_ID.v);
+	    details = new OrderDetails(resultSet, orderDetailsId);
 	} catch (SQLException e) {
 	    throw new IllegalStateException(e);
 	}

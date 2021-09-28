@@ -9,7 +9,6 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 
-import com.danylevych.hotel.thread.PaymentTracker;
 import com.danylevych.hotel.util.Loggers;
 
 @WebListener

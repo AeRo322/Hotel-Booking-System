@@ -1,5 +1,7 @@
 package com.danylevych.hotel.command;
 
+import static java.lang.Long.parseLong;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -7,7 +9,9 @@ import com.danylevych.hotel.dao.BookingDao;
 import com.danylevych.hotel.dao.DaoFactory;
 import com.danylevych.hotel.entity.Booking;
 import com.danylevych.hotel.entity.BookingStatus;
+import com.danylevych.hotel.entity.Cart;
 import com.danylevych.hotel.entity.User;
+import com.danylevych.hotel.util.Session;
 
 public class BookCommand implements Command {
 
@@ -15,17 +19,29 @@ public class BookCommand implements Command {
     public String execute(HttpServletRequest request,
             HttpServletResponse response) {
 
-	User user = (User) request.getSession().getAttribute("user");
+	User user = Session.getUser(request);
 	if (user == null) {
 	    return "auth/login.jsp";
 	}
 
 	BookingDao bookingDao = DaoFactory.getInstance().getBookingDao();
-	Long bookingId = Long.parseLong(request.getParameter("id"));
+	Cart cart = user.getCart();
+	long bookingId;
+	if (cart != null) {
+	    bookingId = cart.getOrderDetails().getId();
+	} else {
+	    bookingId = parseLong(request.getParameter("booking_id"));
+	}
 	Booking booking = bookingDao.find(bookingId);
-	String answer = request.getParameter("v");
+	final String answer = request.getParameter("v");
 
 	switch (answer) {
+	case "create":
+	    bookingDao.create(new Booking(request, bookingId));
+	    user.setCart(null);
+	    Session.saveUser(request, user);
+	    break;
+
 	case "pay":
 	    booking.setStatus(BookingStatus.PAID);
 	    bookingDao.update(booking);
@@ -37,7 +53,7 @@ public class BookCommand implements Command {
 	    break;
 
 	default:
-	    bookingDao.create(new Booking(request));
+	    throw new IllegalArgumentException();
 	}
 
 	return request.getHeader("referer");

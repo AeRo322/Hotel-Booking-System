@@ -7,6 +7,7 @@
 
 <form class="container p-3" action="do" method="post">
   <input name="action" value="book" type="hidden">
+  <input name="v" value="create" type="hidden">
 
   <div class="row mb-3">
     <label for=check_in class="col-2 col-form-label">
@@ -35,8 +36,8 @@
       </div>
     </div>
 
-    <button type=submit
-      class="btn btn-outline-light ${empty sessionScope.orderId ? 'disabled' : '' }">
+    <button type=submit tabindex="${empty sessionScope.user.cart ? -1 : 0 }"
+      class="btn btn-outline-light ${empty sessionScope.user.cart ? 'disabled' : '' }">
       <fmt:message key="cart.book_now" />
     </button>
   </div>

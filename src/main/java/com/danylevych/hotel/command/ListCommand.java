@@ -11,7 +11,9 @@ import com.danylevych.hotel.dao.DaoFactory;
 import com.danylevych.hotel.dao.JdbcDao;
 import com.danylevych.hotel.dao.OrderDao;
 import com.danylevych.hotel.dao.RoomDao;
+import com.danylevych.hotel.entity.Room;
 import com.danylevych.hotel.entity.User;
+import com.danylevych.hotel.entity.UserRole;
 import com.danylevych.hotel.util.Functions;
 import com.danylevych.hotel.util.Session;
 import com.danylevych.hotel.util.Validator;
@@ -31,7 +33,6 @@ public class ListCommand implements Command {
 	DaoFactory daoFactory = DaoFactory.getInstance(DaoFactory.MY_SQL);
 	String entity = request.getParameter("entity");
 	User user = Session.getUser(request);
-	Object value = user.getId();
 	JdbcDao<?> dao;
 	String url;
 
@@ -47,7 +48,8 @@ public class ListCommand implements Command {
 	    break;
 
 	case CartDao.TABLE_NAME:
-	    value = daoFactory.getCartDao().find(user.getId());
+	    user.setCart(daoFactory.getCartDao().find(user.getId()));
+	    Session.saveUser(request, user);
 	    dao = daoFactory.getCartDao();
 	    url = "/WEB-INF/menu/cart.jsp";
 	    break;
@@ -78,7 +80,7 @@ public class ListCommand implements Command {
 
 	final int offset = (page - 1) * limit;
 
-	List<?> list = dao.list(limit, offset, orderBy, isAscending, value);
+	List<?> list = dao.list(limit, offset, orderBy, isAscending, user);
 	final int nRows = dao.count();
 
 	final int x = nRows / limit;
@@ -93,6 +95,13 @@ public class ListCommand implements Command {
 	int[] pages = new int[nPageLinks];
 	for (int j = 0; j < pages.length; j++) {
 	    pages[j] = ++firstPage;
+	}
+
+	if (user.getRole() == UserRole.MANAGER) {
+	    RoomDao roomDao = daoFactory.getRoomDao();
+	    List<Room> rooms =
+	            roomDao.list(limit, offset, orderBy, isAscending, user);
+	    request.getSession().setAttribute("rooms", rooms);
 	}
 
 	request.setAttribute("list", list);

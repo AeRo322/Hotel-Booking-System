@@ -41,4 +41,9 @@ public abstract class RoomDao extends JdbcDao<Room> {
 	    t.getPrice()
 	};
     }
+
+    @Override
+    protected Object getWhereValue(Room t) {
+	return t.getNumber();
+    }
 }

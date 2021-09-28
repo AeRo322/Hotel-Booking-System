@@ -14,6 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -63,13 +64,13 @@ public class OrderDetails implements Serializable {
 	}
     }
 
-    public OrderDetails(ResultSet resultSet) {
+    public OrderDetails(ResultSet resultSet, long orderDetailsId) {
 	try {
 	    guests = resultSet.getInt(GUESTS.v);
 	    userId = resultSet.getInt(USER_ID.v);
 	    checkIn = resultSet.getDate(CHECK_IN.v);
 	    checkOut = resultSet.getDate(CHECK_OUT.v);
-	    id = resultSet.getLong(ID.v);
+	    id = orderDetailsId;
 
 	    DaoFactory instance = DaoFactory.getInstance();
 	    OrderDetailsDao orderDetailsDao = instance.getOrderDetailsDao();
@@ -85,6 +86,21 @@ public class OrderDetails implements Serializable {
     public OrderDetails(User user, Room room) {
 	userId = user.getId();
 	rooms = Arrays.asList(room);
+    }
+
+    public OrderDetails(ResultSet resultSet) throws SQLException {
+	this(resultSet, resultSet.getLong(ID.v));
+    }
+
+    @Override
+    public String toString() {
+	if (rooms == null) {
+	    return "";
+	}
+
+	return rooms.stream()
+	            .map(Object::toString)
+	            .collect(Collectors.joining(", "));
     }
 
     public long getUserId() {

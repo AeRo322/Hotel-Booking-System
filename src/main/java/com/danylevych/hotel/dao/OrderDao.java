@@ -3,6 +3,7 @@ package com.danylevych.hotel.dao;
 import java.sql.ResultSet;
 
 import com.danylevych.hotel.entity.Order;
+import com.danylevych.hotel.util.SQL;
 
 public abstract class OrderDao extends JdbcDao<Order> {
 
@@ -24,5 +25,18 @@ public abstract class OrderDao extends JdbcDao<Order> {
 	    t.getDetails().getId(),
 	    t.getStatus().ordinal()
 	};
+    }
+
+    @Override
+    protected String generateSqlFind(int n) {
+	return SQL.generateSqlFind(TABLE_NAME
+	                           + "."
+	                           + Order.Column.ID,
+	        n, TABLE_NAME, OrderDetailsDao.TABLE_NAME);
+    }
+
+    @Override
+    protected Object getWhereValue(Order t) {
+	return t.getId();
     }
 }

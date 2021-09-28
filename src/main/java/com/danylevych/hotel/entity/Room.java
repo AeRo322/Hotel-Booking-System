@@ -45,7 +45,12 @@ public class Room implements Serializable {
 	number = resultSet.getInt(NUMBER.v);
 	price = resultSet.getInt(PRICE.v);
     }
-
+    
+    @Override
+    public String toString() {
+        return String.valueOf(number);
+    }
+    
     @Override
     public boolean equals(Object obj) {
 	if (obj instanceof Room) {

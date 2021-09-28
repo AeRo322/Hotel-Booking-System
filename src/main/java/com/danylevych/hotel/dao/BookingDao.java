@@ -3,6 +3,7 @@ package com.danylevych.hotel.dao;
 import java.sql.ResultSet;
 
 import com.danylevych.hotel.entity.Booking;
+import com.danylevych.hotel.entity.Order;
 import com.danylevych.hotel.util.SQL;
 
 public abstract class BookingDao extends JdbcDao<Booking> {
@@ -15,9 +16,13 @@ public abstract class BookingDao extends JdbcDao<Booking> {
 
     public abstract void closeExpiredBookings();
 
+    public abstract void create(Booking booking, Order order);
+
     @Override
     protected String generateSqlFind(int n) {
-	return SQL.generateSqlFind(Booking.Column.ID, n, TABLE_NAME);
+	return SQL.generateSqlFind(
+	        String.format("%s.%s", TABLE_NAME, Booking.Column.ID), n,
+	        TABLE_NAME, OrderDetailsDao.TABLE_NAME);
     }
 
     @Override
@@ -31,6 +36,11 @@ public abstract class BookingDao extends JdbcDao<Booking> {
     @Override
     protected Booking mapEntity(ResultSet resultSet) {
 	return new Booking(resultSet);
+    }
+
+    @Override
+    protected Object getWhereValue(Booking t) {
+	return t.getId();
     }
 
 }

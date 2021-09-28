@@ -35,4 +35,9 @@ public abstract class CartDao extends JdbcDao<Cart> {
 	    t.getOrderDetails().getId(),
 	};
     }
+
+    @Override
+    protected Object getWhereValue(Cart t) {
+	return t.getUserId();
+    }
 }

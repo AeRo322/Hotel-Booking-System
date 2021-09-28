@@ -14,7 +14,6 @@ public class OrderCommand implements Command {
     public String execute(HttpServletRequest request,
             HttpServletResponse response) {
 
-	// TODO
 	User user = Session.getUser(request);
 	if (user == null) {
 	    return request.getContextPath()
@@ -22,7 +21,7 @@ public class OrderCommand implements Command {
 	}
 
 	DaoFactory.getInstance().getOrderDao().create(new Order(request));
-	
+
 	return request.getHeader("referer");
     }
 

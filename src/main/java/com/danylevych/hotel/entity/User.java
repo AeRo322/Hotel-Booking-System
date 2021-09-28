@@ -5,12 +5,15 @@ import static com.danylevych.hotel.entity.User.Column.EMAIL;
 import static com.danylevych.hotel.entity.User.Column.FIRST_NAME;
 import static com.danylevych.hotel.entity.User.Column.ID;
 import static com.danylevych.hotel.entity.User.Column.LAST_NAME;
+import static com.danylevych.hotel.entity.User.Column.PASSWORD;
 import static com.danylevych.hotel.entity.User.Column.ROLE_ID;
 
 import java.io.Serializable;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import javax.servlet.http.HttpServletRequest;
 
 public class User implements Serializable {
 
@@ -30,11 +33,13 @@ public class User implements Serializable {
 
     public enum Column {
 
-	ID,
-	EMAIL,
 	ROLE_ID,
-	LAST_NAME,
 	FIRST_NAME,
+	LAST_NAME,
+	EMAIL,
+	PASSWORD,
+
+	ID,
 	CREATE_TIME;
 
 	public final String v = name().toLowerCase();
@@ -43,7 +48,7 @@ public class User implements Serializable {
 
     public User() {
     }
-    
+
     public User(ResultSet resultSet) throws SQLException {
 	role = UserRole.fromInt(resultSet.getInt(ROLE_ID.v));
 	createTime = resultSet.getDate(CREATE_TIME.v);
@@ -51,6 +56,14 @@ public class User implements Serializable {
 	lastName = resultSet.getString(LAST_NAME.v);
 	email = resultSet.getString(EMAIL.v);
 	id = resultSet.getInt(ID.v);
+    }
+
+    public User(HttpServletRequest request) {
+	firstName = request.getParameter(FIRST_NAME.v);
+	lastName = request.getParameter(LAST_NAME.v);
+	password = request.getParameter(PASSWORD.v);
+	email = request.getParameter(EMAIL.v);
+	role = UserRole.CLIENT;
     }
 
     public String getFullName() {

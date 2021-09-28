@@ -8,7 +8,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
+import com.danylevych.hotel.entity.User;
 import com.danylevych.hotel.util.Loggers;
 import com.danylevych.hotel.util.SQL;
 
@@ -33,6 +35,18 @@ public abstract class JdbcDao<T> {
 
     protected abstract T mapEntity(ResultSet resultSet);
 
+    protected abstract String generateSqlFind(int n);
+
+    protected abstract Object getWhereValue(T t);
+
+    protected abstract Object[] getValues(T t);
+
+    private Object[] getUpdateValues(T t) {
+	Stream<Object> values = Stream.of(getValues(t));
+	Stream<Object> whereValue = Stream.of(getWhereValue(t));
+	return Stream.concat(values, whereValue).toArray();
+    }
+
     private String generateSqlUpdate() {
 	return SQL.generateSqlUpdate(columns, n, table);
     }
@@ -41,12 +55,8 @@ public abstract class JdbcDao<T> {
 	return SQL.generateSqlInsert(columns, n, table);
     }
 
-    protected abstract String generateSqlFind(int n);
-
-    protected abstract Object[] getValues(T t);
-
     public abstract List<T> list(int limit, int offset, String orderBy,
-            boolean isAscending, Object... values);
+            boolean isAscending, User user);
 
     protected List<T> list(String sql, Object... values) {
 	List<T> list = new ArrayList<>();
@@ -99,18 +109,6 @@ public abstract class JdbcDao<T> {
 	}
     }
 
-    public void update(Connection c, T t) {
-	update(c, false, generateSqlUpdate(), getValues(t));
-    }
-
-    public void update(T t) {
-	update(generateSqlUpdate(), getValues(t));
-    }
-
-    protected void update(Connection c, String sql, Object... values) {
-	update(c, false, sql, values);
-    }
-
     public long create(Connection c, boolean shouldReturnGeneratedKeys, T t) {
 	return create(c, shouldReturnGeneratedKeys, generateSqlInsert(),
 	        getValues(t));
@@ -136,6 +134,18 @@ public abstract class JdbcDao<T> {
             String sql, Object... values) {
 	List<Long> keys = update(c, shouldReturnGeneratedKeys, sql, values);
 	return keys == null ? 0 : keys.get(0);
+    }
+
+    public void update(Connection c, T t) {
+	update(c, false, generateSqlUpdate(), getUpdateValues(t));
+    }
+
+    public void update(T t) {
+	update(generateSqlUpdate(), getUpdateValues(t));
+    }
+
+    protected void update(Connection c, String sql, Object... values) {
+	update(c, false, sql, values);
     }
 
     protected int update(String sql, Object... values) {

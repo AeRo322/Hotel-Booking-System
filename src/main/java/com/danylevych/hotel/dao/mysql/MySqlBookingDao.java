@@ -11,9 +11,11 @@ import com.danylevych.hotel.dao.OrderDetailsDao;
 import com.danylevych.hotel.dao.RoomDao;
 import com.danylevych.hotel.entity.Booking;
 import com.danylevych.hotel.entity.BookingStatus;
+import com.danylevych.hotel.entity.Order;
 import com.danylevych.hotel.entity.OrderDetails;
 import com.danylevych.hotel.entity.Room;
 import com.danylevych.hotel.entity.RoomStatus;
+import com.danylevych.hotel.entity.User;
 
 public class MySqlBookingDao extends BookingDao {
 
@@ -24,14 +26,23 @@ public class MySqlBookingDao extends BookingDao {
     @Override
     public void create(Booking booking) {
 	transaction(c -> {
-	    daoFactory.getOrderDetailsDao().update(c, booking.getDetails());
+	    OrderDetails details = booking.getDetails();
+	    daoFactory.getOrderDetailsDao().update(c, details);
+	    create(c, booking);
+	});
+    }
+    
+    @Override
+    public void create(Booking booking, Order order) {
+	transaction(c -> {
+	    daoFactory.getOrderDao().update(c, order);
 	    create(c, booking);
 	});
     }
 
     @Override
     public List<Booking> list(int limit, int offset, String orderBy,
-            boolean isAscending, Object... values) {
+            boolean isAscending, User user) {
 	String sql = "SELECT *"
 	             + " FROM booking"
 	             + " JOIN order_details"
@@ -42,9 +53,7 @@ public class MySqlBookingDao extends BookingDao {
 
 	sql = String.format(sql, orderBy, isAscending ? "ASC" : "DESC");
 
-	Long userId = (Long) values[0];
-
-	return list(sql, userId, limit, offset);
+	return list(sql, user.getId(), limit, offset);
     }
 
     @Override

@@ -5,10 +5,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.danylevych.hotel.dao.DaoFactory;
 import com.danylevych.hotel.entity.User;
-import com.danylevych.hotel.util.Session;
 import com.danylevych.hotel.util.Validator;
 
-public class LoginCommand implements Command {
+public class RegisterCommand implements Command {
 
     @Override
     public String execute(HttpServletRequest request,
@@ -22,11 +21,11 @@ public class LoginCommand implements Command {
 	String password = request.getParameter("password");
 	DaoFactory daoFactory = DaoFactory.getInstance(DaoFactory.MY_SQL);
 	User user = daoFactory.getUserDao().find(email, password);
-	if (user == null) {
-	    throw new IllegalArgumentException("Wrong credentials");
+	if (user != null) {
+	    throw new IllegalArgumentException("Account already exists");
 	}
-	
-	Session.saveUser(request, user);
+
+	daoFactory.getUserDao().create(new User(request));
 
 	return request.getContextPath();
     }

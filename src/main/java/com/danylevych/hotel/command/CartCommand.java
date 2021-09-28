@@ -43,7 +43,8 @@ public class CartCommand implements Command {
 	    orderDetailsDao.addRoomToOrder(orderDetails);
 	}
 
-	return request.getHeader("referer") + "#";
+	return request.getHeader("referer")
+	              .replaceAll("&orderBy=.*(?=&|$)", "");
     }
 
 }

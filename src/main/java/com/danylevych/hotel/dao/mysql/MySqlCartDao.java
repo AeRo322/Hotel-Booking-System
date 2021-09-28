@@ -10,6 +10,7 @@ import com.danylevych.hotel.dao.DaoFactory;
 import com.danylevych.hotel.dao.OrderDetailsDao;
 import com.danylevych.hotel.entity.Cart;
 import com.danylevych.hotel.entity.OrderDetails;
+import com.danylevych.hotel.entity.User;
 
 public class MySqlCartDao extends CartDao {
 
@@ -41,7 +42,7 @@ public class MySqlCartDao extends CartDao {
 
     @Override
     public List<Cart> list(int limit, int offset, String orderBy,
-            boolean isAscending, Object... values) {
+            boolean isAscending, User user) {
 	String sql = "SELECT *"
 	             + " FROM room"
 	             + " JOIN order_details"
@@ -52,7 +53,7 @@ public class MySqlCartDao extends CartDao {
 	             + " ORDER BY %s %s"
 	             + " LIMIT ? OFFSET ?";
 
-	Cart cart = (Cart) values[0];
+	Cart cart = user.getCart();
 	if (cart == null) {
 	    return Collections.emptyList();
 	}

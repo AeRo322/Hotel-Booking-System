@@ -1,6 +1,7 @@
 package com.danylevych.hotel.entity;
 
 import static com.danylevych.hotel.entity.Booking.Column.CREATE_TIME;
+import static com.danylevych.hotel.entity.Booking.Column.DETAILS_ID;
 import static com.danylevych.hotel.entity.Booking.Column.ID;
 import static com.danylevych.hotel.entity.Booking.Column.STATUS_ID;
 
@@ -41,15 +42,22 @@ public class Booking implements Serializable {
 	    status = BookingStatus.fromInt(resultSet.getInt(STATUS_ID.v));
 	    createTime = resultSet.getTimestamp(CREATE_TIME.v);
 	    id = resultSet.getLong(ID.v);
-
-	    details = new OrderDetails(resultSet);
+	    
+	    final long orderDetailsId = resultSet.getLong(DETAILS_ID.v);
+	    details = new OrderDetails(resultSet, orderDetailsId);
 	} catch (SQLException e) {
 	    throw new IllegalStateException(e);
 	}
     }
 
-    public Booking(HttpServletRequest request) {
+    public Booking(HttpServletRequest request, long orderDetailsId) {
 	details = new OrderDetails(request);
+	details.setId(orderDetailsId);
+	status = BookingStatus.UNPAID;
+    }
+
+    public Booking(Order order) {
+	details = order.getDetails();
 	status = BookingStatus.UNPAID;
     }
 

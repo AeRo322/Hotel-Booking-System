@@ -6,6 +6,8 @@ import java.util.List;
 import com.danylevych.hotel.dao.DaoFactory;
 import com.danylevych.hotel.dao.RoomDao;
 import com.danylevych.hotel.entity.Room;
+import com.danylevych.hotel.entity.User;
+import com.danylevych.hotel.entity.UserRole;
 
 public class MySqlRoomDao extends RoomDao {
 
@@ -22,15 +24,23 @@ public class MySqlRoomDao extends RoomDao {
 
     @Override
     public List<Room> list(int limit, int offset, String orderBy,
-            boolean isAscending, Object... values) {
-	String sql = "SELECT *"
-	             + " FROM room"
-	             + " ORDER BY %s %s"
-	             + " LIMIT ? OFFSET ?";
+            boolean isAscending, User user) {
+	if (user.getRole() == UserRole.MANAGER) {
+	    final String sql = "SELECT *"
+	                       + " FROM room"
+	                       + " WHERE status_id = 0";
 
-	sql = String.format(sql, orderBy, isAscending ? "ASC" : "DESC");
+	    return list(sql);
+	} else {
+	    String sql = "SELECT *"
+	                 + " FROM room"
+	                 + " ORDER BY %s %s"
+	                 + " LIMIT ? OFFSET ?";
 
-	return list(sql, limit, offset);
+	    sql = String.format(sql, orderBy, isAscending ? "ASC" : "DESC");
+
+	    return list(sql, limit, offset);
+	}
     }
 
 }
